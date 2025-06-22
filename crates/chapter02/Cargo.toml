@@ -7,6 +7,7 @@ edition = "2024"
 anyhow.workspace = true
 regex.workspace = true
 tch.workspace = true
+tiktoken.workspace = true
 
 [dependencies.reqwest]
 features = ["blocking"]
