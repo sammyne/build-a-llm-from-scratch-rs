@@ -5,12 +5,9 @@ resolver = "3"
 
 [workspace.dependencies]
 anyhow = "1"
+burn = "0.17"
 regex = "1"
 reqwest = "0.12"
-
-[workspace.dependencies.tch]
-features = ["download-libtorch"]
-version = "0.20"
 
 [workspace.dependencies.tiktoken]
 features = ["ext"]
