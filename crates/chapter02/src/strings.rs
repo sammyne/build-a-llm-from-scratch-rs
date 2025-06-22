@@ -1,5 +1,14 @@
 use regex::Regex;
 
+pub fn concat(a: String, token: &str) -> String {
+    if a.is_empty() {
+        return token.to_owned();
+    }
+
+    const P: &str = r#",.?!"()\\'"#;
+    if P.contains(token) { a + token } else { a + " " + token }
+}
+
 pub fn split(text: &str) -> Vec<&str> {
     let re = Regex::new(r#"([,.:;?_!"()'\\]|--|\s)"#).unwrap();
     let mut result = Vec::new();
