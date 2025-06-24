@@ -1,5 +1,8 @@
+const DATA: &str = std::include_str!("../static/the-verdict.txt");
+
 pub fn load() -> std::io::Result<String> {
-    std::fs::read_to_string("static/the-verdict.txt")
+    //std::fs::read_to_string("static/the-verdict.txt")
+    Ok(DATA.to_owned())
 }
 
 pub fn load_and_canonicalize<T: FromIterator<String>>() -> std::io::Result<T> {

@@ -12,6 +12,3 @@ tiktoken.workspace = true
 [dependencies.reqwest]
 features = ["blocking"]
 workspace = true
-
-[features]
-default = ["burn/dataset", "burn/ndarray"]
