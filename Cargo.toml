@@ -5,11 +5,17 @@ resolver = "3"
 
 [workspace.dependencies]
 anyhow = "1"
-burn = "0.17"
 regex = "1"
 reqwest = "0.12"
+
+chapter02.path = "crates/chapter02"
+
+[workspace.dependencies.burn]
+features = ["dataset", "ndarray"]
+version = "0.17"
 
 [workspace.dependencies.tiktoken]
 features = ["ext"]
 git = "https://github.com/sammyne/tiktoken.git"
 rev = "5eb293a"
+
