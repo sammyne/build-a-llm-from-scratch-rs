@@ -1,6 +1,7 @@
 use burn::prelude::Backend;
 use burn::tensor::{Distribution, Tensor, activation};
 use chapter03::attention::v1::SelfAttentionV1;
+use chapter03::attention::v2::SelfAttentionV2;
 
 type B = burn::backend::ndarray::NdArray<f32>;
 
