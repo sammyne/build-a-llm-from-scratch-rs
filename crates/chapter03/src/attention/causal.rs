@@ -18,6 +18,8 @@ impl<B: Backend> CausalAttention<B> {
     pub fn forward(&self, x: Tensor<B, 3>) -> Tensor<B, 3> {
         let num_tokens = x.shape().dims[1];
 
+        //let x = x.set_require_grad(true);
+
         let keys = self.k.clone().forward(x.clone());
         let queries = self.q.clone().forward(x.clone());
         let values = self.v.clone().forward(x.clone());
@@ -27,7 +29,7 @@ impl<B: Backend> CausalAttention<B> {
         let attn_scores = queries.matmul(keys.transpose());
 
         let mask = self.mask.val().bool().slice([..1, ..num_tokens, ..num_tokens]);
-        let attn_scores = attn_scores.mask_fill(mask, f32::INFINITY);
+        let attn_scores = attn_scores.mask_fill(mask, f32::NEG_INFINITY);
 
         let dim = attn_scores.dims().len() - 1;
         let attn_weights = activation::softmax(attn_scores / dk.sqrt(), dim);

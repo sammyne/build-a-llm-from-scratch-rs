@@ -1,7 +1,7 @@
 use burn::backend::{Autodiff, NdArray};
 use burn::prelude::Backend;
 use burn::tensor::Tensor;
-use chapter03::attention::CausalAttention;
+use chapter03::attention::MultiHeadAttentionWrapper;
 
 type B = Autodiff<NdArray<f32>>;
 
@@ -29,8 +29,8 @@ fn main() {
     println!("batch.shape: {:?}", batch.shape());
 
     let context_length = batch.shape().dims[1];
-    let ca = CausalAttention::new(d_in, d_out, context_length, 0.0, false);
-    let context_vecs = ca.forward(batch);
+    let mha = MultiHeadAttentionWrapper::new(d_in, d_out, context_length, 0.0, 2, false);
+    let context_vecs = mha.forward(batch);
     println!("context_vecs:\n{context_vecs:?}\n");
     println!("context_vecs.shape: {:?}\n", context_vecs.shape());
 }
