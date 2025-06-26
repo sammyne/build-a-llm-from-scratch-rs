@@ -60,7 +60,7 @@ fn main() {
     let context_vec3 = sa_v1.forward(inputs.clone());
     println!("context_vec3\n{context_vec3:?}");
 
-    let sa_v2 = SelfAttentionV1::<B>::new(d_in, d_out);
+    let sa_v2 = SelfAttentionV2::<B>::new(d_in, d_out, false);
     let context_vec4 = sa_v2.forward(inputs.clone());
     println!("context_vec4\n{context_vec4:?}");
 }

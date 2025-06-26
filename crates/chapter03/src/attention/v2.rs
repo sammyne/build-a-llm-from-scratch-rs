@@ -5,9 +5,9 @@ use burn::tensor::{Tensor, activation};
 
 #[derive(Module, Debug)]
 pub struct SelfAttentionV2<B: Backend> {
-    q: Linear<B>,
-    k: Linear<B>,
-    v: Linear<B>,
+    pub q: Linear<B>,
+    pub k: Linear<B>,
+    pub v: Linear<B>,
 }
 
 impl<B: Backend> SelfAttentionV2<B> {

@@ -5,6 +5,9 @@ edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
-burn.workspace = true
 chapter02.workspace = true
 tiktoken.workspace = true
+
+[dependencies.burn]
+features = ["autodiff"]
+workspace = true
