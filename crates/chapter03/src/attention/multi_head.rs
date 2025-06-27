@@ -19,9 +19,9 @@ pub struct MultiHeadAttention<B: Backend> {
 
 impl<B: Backend> MultiHeadAttention<B> {
     pub fn forward(&self, x: Tensor<B, 3>) -> Tensor<B, 3> {
-        let (b, ntokens, d_in) = {
+        let (b, ntokens) = {
             let s = x.shape().dims;
-            (s[0], s[1], s[2])
+            (s[0], s[1])
         };
 
         let keys = self.k.forward(x.clone());
