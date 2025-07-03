@@ -3,7 +3,7 @@ use burn::nn::{Dropout, Embedding, EmbeddingConfig, Linear, LinearConfig};
 use burn::prelude::Backend;
 use burn::tensor::{Device, Int, Tensor};
 
-use crate::{Config, DummyLayerNorm, DummyTransformerBlock, GPT_124M};
+use crate::{Config, DummyLayerNorm, DummyTransformerBlock};
 
 #[derive(Debug, Module)]
 pub struct DummyGptModel<B: Backend> {
@@ -11,7 +11,7 @@ pub struct DummyGptModel<B: Backend> {
     pos_emb: Embedding<B>,
     drop_emb: Dropout,
     trf_blocks: Vec<DummyTransformerBlock<B>>,
-    final_norm: DummyLayerNorm<B>,
+    final_norm: DummyLayerNorm,
     out_head: Linear<B>,
 }
 
