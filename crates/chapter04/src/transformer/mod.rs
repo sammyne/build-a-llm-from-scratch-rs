@@ -2,15 +2,15 @@ mod dummy;
 
 use burn::module::Module;
 use burn::nn::Dropout;
+use burn::prelude::*;
 use burn::tensor::Tensor;
-use burn::tensor::backend::AutodiffBackend;
 use chapter03::attention::MultiHeadAttention;
 pub use dummy::*;
 
 use crate::{Config, FeedForward, LayerNorm};
 
 #[derive(Debug, Module)]
-pub struct TransformerBlock<B: AutodiffBackend> {
+pub struct TransformerBlock<B: Backend> {
     attn: MultiHeadAttention<B>,
     ff: FeedForward<B>,
     norm1: LayerNorm<B>,
@@ -18,7 +18,7 @@ pub struct TransformerBlock<B: AutodiffBackend> {
     drop_shortcut: Dropout,
 }
 
-impl<B: AutodiffBackend> TransformerBlock<B> {
+impl<B: Backend> TransformerBlock<B> {
     pub fn forward(&self, x: Tensor<B, 3>) -> Tensor<B, 3> {
         let shortcut = x.clone();
 

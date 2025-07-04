@@ -9,5 +9,5 @@ chapter03.workspace = true
 tiktoken.workspace = true
 
 [dependencies.burn]
-features = ["autodiff"]
+features = ["autodiff", "ndarray"]
 workspace = true
