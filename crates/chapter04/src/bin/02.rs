@@ -32,7 +32,7 @@ fn main() -> anyhow::Result<()> {
     println!("mean: {mean}");
     println!("var: {var}");
 
-    let ln = LayerNorm::<B>::new(5);
+    let ln = LayerNorm::<B, 2>::new(5);
     let out_ln = ln.forward(batch_example.clone());
     let dim = out_ln.dims().len() - 1;
     let (var, mean) = out_ln.var_mean_bias(dim);

@@ -7,7 +7,7 @@ pub struct Config {
     pub nheads: usize,
     pub nlayers: usize,
     pub drop_rate: f64,
-    pub pkv_bias: bool,
+    pub qkv_bias: bool,
 }
 
 pub static GPT_124M: LazyLock<Config> = LazyLock::new(|| Config {
@@ -17,5 +17,5 @@ pub static GPT_124M: LazyLock<Config> = LazyLock::new(|| Config {
     nheads: 12,
     nlayers: 12,
     drop_rate: 0.1,
-    pkv_bias: false,
+    qkv_bias: false,
 });

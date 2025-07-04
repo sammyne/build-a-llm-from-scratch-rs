@@ -7,3 +7,6 @@
 ```bash
 bash setup.sh
 ```
+
+## 参考文献
+- https://github.com/rasbt/LLMs-from-scratch
