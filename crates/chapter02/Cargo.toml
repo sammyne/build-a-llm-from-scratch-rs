@@ -5,9 +5,12 @@ edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
-burn.workspace = true
 regex.workspace = true
 tiktoken.workspace = true
+
+[dependencies.burn]
+features = ["dataset"]
+workspace = true
 
 [dependencies.reqwest]
 features = ["blocking"]

@@ -5,15 +5,17 @@ resolver = "3"
 
 [workspace.dependencies]
 anyhow = "1"
+burn = "0.17"
 regex = "1"
 reqwest = "0.12"
 
 chapter02.path = "crates/chapter02"
 chapter03.path = "crates/chapter03"
 
-[workspace.dependencies.burn]
-features = ["dataset", "ndarray"]
-version = "0.17"
+# 成员 crate 不会集成工作空间的 features
+#[workspace.dependencies.burn]
+#features = ["dataset", "ndarray"]
+#version = "0.17"
 
 [workspace.dependencies.tiktoken]
 features = ["ext"]

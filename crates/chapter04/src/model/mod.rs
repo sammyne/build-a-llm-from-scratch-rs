@@ -4,13 +4,12 @@ use burn::module::Module;
 use burn::nn::{Dropout, Embedding, EmbeddingConfig, Linear, LinearConfig};
 use burn::prelude::*;
 use burn::tensor::Tensor;
-use burn::tensor::backend::AutodiffBackend;
 pub use dummy::*;
 
 use crate::{Config, LayerNorm, TransformerBlock};
 
 #[derive(Debug, Module)]
-pub struct GptModel<B: AutodiffBackend> {
+pub struct GptModel<B: Backend> {
     pub tok_emb: Embedding<B>,
     pub pos_emb: Embedding<B>,
     pub drop_emb: Dropout,
@@ -19,7 +18,7 @@ pub struct GptModel<B: AutodiffBackend> {
     pub out_head: Linear<B>,
 }
 
-impl<B: AutodiffBackend> GptModel<B> {
+impl<B: Backend> GptModel<B> {
     pub fn forward(&self, in_idx: Tensor<B, 2, Int>) -> Tensor<B, 3> {
         let device = in_idx.device();
         let seq_len = in_idx.shape().dims[1];
