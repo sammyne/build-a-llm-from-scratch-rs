@@ -1,6 +1,6 @@
 use burn::module::{Module, Param};
 use burn::nn::{Dropout, Linear, LinearConfig};
-use burn::prelude::Backend;
+use burn::prelude::*;
 use burn::tensor::{Tensor, activation};
 
 #[derive(Module, Debug)]
@@ -39,7 +39,7 @@ impl<B: Backend> MultiHeadAttention<B> {
         let dk = *keys.dims().last().expect("get k's last dim") as f32;
 
         let attn_scores = queries.matmul(keys.transpose());
-        let mask = self.mask.val().bool().slice([..1, ..ntokens, ..ntokens]);
+        let mask = self.mask.val().bool().slice(s![.., .., ..ntokens, ..ntokens]);
 
         let attn_scores = attn_scores.mask_fill(mask, f32::NEG_INFINITY);
 

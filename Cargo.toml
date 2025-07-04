@@ -9,6 +9,7 @@ regex = "1"
 reqwest = "0.12"
 
 chapter02.path = "crates/chapter02"
+chapter03.path = "crates/chapter03"
 
 [workspace.dependencies.burn]
 features = ["dataset", "ndarray"]

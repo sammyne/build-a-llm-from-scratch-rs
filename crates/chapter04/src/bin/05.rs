@@ -85,6 +85,4 @@ fn print_gradients(model: ExampleDeepNeuralNetwork<B>, x: Tensor<B, 3>) {
             None => println!("miss gradient for {i}-th layer"),
         }
     }
-
-
 }
