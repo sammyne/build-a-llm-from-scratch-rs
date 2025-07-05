@@ -1,4 +1,5 @@
 use burn::backend::NdArray;
+use burn::nn::loss::CrossEntropyLossConfig;
 use burn::prelude::*;
 use chapter05::utils;
 

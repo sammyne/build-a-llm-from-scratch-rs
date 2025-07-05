@@ -5,7 +5,7 @@ use burn::backend::{Autodiff, NdArray};
 use burn::module::AutodiffModule;
 use burn::prelude::*;
 use burn::tensor::{DType, Tensor};
-use chapter04::{GPT_124M, GptModel,utils};
+use chapter04::{GPT_124M, GptModel, utils};
 use tiktoken::ext::Encoding;
 
 type B = Autodiff<NdArray<f32>>;

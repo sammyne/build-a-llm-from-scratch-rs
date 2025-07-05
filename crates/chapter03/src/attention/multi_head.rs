@@ -1,4 +1,4 @@
-use burn::module::{Module, Param};
+use burn::module::Module;
 use burn::nn::{Dropout, Linear, LinearConfig};
 use burn::prelude::*;
 use burn::tensor::{Tensor, activation};
@@ -14,7 +14,7 @@ pub struct MultiHeadAttention<B: Backend> {
     pub v: Linear<B>,
     pub out_proj: Linear<B>,
     pub dropout: Dropout,
-    pub mask: Param<Tensor<B, 4>>,
+    pub mask: Tensor<B, 4>,
 }
 
 impl<B: Backend> MultiHeadAttention<B> {
@@ -39,7 +39,7 @@ impl<B: Backend> MultiHeadAttention<B> {
         let dk = *keys.dims().last().expect("get k's last dim") as f32;
 
         let attn_scores = queries.matmul(keys.transpose());
-        let mask = self.mask.val().bool().slice(s![.., .., ..ntokens, ..ntokens]);
+        let mask = self.mask.clone().bool().slice(s![.., .., ..ntokens, ..ntokens]);
 
         let attn_scores = attn_scores.mask_fill(mask, f32::NEG_INFINITY);
 
@@ -75,7 +75,7 @@ impl<B: Backend> MultiHeadAttention<B> {
         let mask = Tensor::<B, 2>::ones([context_length, context_length], &device)
             .triu(1)
             .unsqueeze::<4>();
-        let mask = Param::from_tensor(mask);
+        // let mask = Param::from_tensor(mask);
 
         Self {
             d_out,
