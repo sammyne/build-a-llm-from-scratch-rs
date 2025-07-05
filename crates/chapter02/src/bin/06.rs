@@ -17,7 +17,7 @@ fn main() -> anyhow::Result<()> {
             ..Default::default()
         };
 
-        let loader = GptDatasetV1::<Backend>::new_loader_v1(&text, Encoding::gpt2(), opts).context("new loader")?;
+        let loader = GptDatasetV1::<Backend>::new_loader_v1(&text, &Encoding::gpt2(), opts).context("new loader")?;
         let mut iter = loader.iter();
 
         let b1 = iter.next().context("get 1st batch")?;
@@ -36,7 +36,7 @@ fn main() -> anyhow::Result<()> {
             shuffle_seed: None,
             ..Default::default()
         };
-        let loader = GptDatasetV1::<Backend>::new_loader_v1(&text, Encoding::gpt2(), opts).context("new loader")?;
+        let loader = GptDatasetV1::<Backend>::new_loader_v1(&text, &Encoding::gpt2(), opts).context("new loader")?;
         let mut iter = loader.iter();
 
         let (inputs, targets) = iter.next().context("get 1st batch")?;

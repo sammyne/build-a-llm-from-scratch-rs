@@ -4,8 +4,8 @@ use anyhow::Context;
 use burn::backend::{Autodiff, NdArray};
 use burn::module::AutodiffModule;
 use burn::prelude::*;
-use burn::tensor::{DType, Tensor, activation};
-use chapter04::{GPT_124M, GptModel};
+use burn::tensor::{DType, Tensor};
+use chapter04::{GPT_124M, GptModel,utils};
 use tiktoken::ext::Encoding;
 
 type B = Autodiff<NdArray<f32>>;
@@ -31,7 +31,7 @@ fn main() -> anyhow::Result<()> {
 
     let infer = model.valid();
 
-    let out = generate_text_simple(&infer, encoded_tensor.inner(), 6, GPT_124M.context_length);
+    let out = utils::generate_text_simple(&infer, encoded_tensor.inner(), 6, GPT_124M.context_length);
     println!("Output: {out}");
     println!("Output length: {:?}", out.dims()[1]);
 
@@ -45,27 +45,4 @@ fn main() -> anyhow::Result<()> {
     println!("Decoded text: {decoded_text}");
 
     Ok(())
-}
-
-fn generate_text_simple(
-    model: &GptModel<NdArray>,
-    mut idx: Tensor<NdArray, 2, Int>,
-    max_new_tokens: usize,
-    context_size: usize,
-) -> Tensor<NdArray, 2, Int> {
-    let context_size = context_size as i32;
-    for _ in 0..max_new_tokens {
-        let idx_cond = idx.clone().slice(s![.., -context_size..]);
-        let logits = model.forward(idx_cond);
-
-        let logits = logits.slice(s![.., -1, ..]).squeeze(1);
-
-        let dim = logits.dims().len() - 1;
-
-        let probas = activation::softmax(logits, dim);
-        let idx_next = probas.argmax(dim);
-        idx = Tensor::cat(vec![idx, idx_next], 1);
-    }
-
-    idx
 }

@@ -5,6 +5,8 @@ mod model;
 mod norm;
 mod transformer;
 
+pub mod utils;
+
 pub use config::*;
 pub use feed_forward::*;
 pub use gelu::*;

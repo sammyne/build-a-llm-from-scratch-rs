@@ -11,6 +11,7 @@ reqwest = "0.12"
 
 chapter02.path = "crates/chapter02"
 chapter03.path = "crates/chapter03"
+chapter04.path = "crates/chapter04"
 
 # 成员 crate 不会集成工作空间的 features
 #[workspace.dependencies.burn]

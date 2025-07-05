@@ -9,7 +9,7 @@ regex.workspace = true
 tiktoken.workspace = true
 
 [dependencies.burn]
-features = ["dataset"]
+features = ["dataset", "ndarray"]
 workspace = true
 
 [dependencies.reqwest]
