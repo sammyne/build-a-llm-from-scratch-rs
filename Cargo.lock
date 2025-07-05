@@ -799,6 +799,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "chapter05"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "burn",
+ "chapter02",
+ "chapter04",
+ "tiktoken",
+]
+
+[[package]]
 name = "cipher"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

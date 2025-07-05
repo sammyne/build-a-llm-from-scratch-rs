@@ -27,7 +27,7 @@ fn main() -> anyhow::Result<()> {
         ..Default::default()
     };
 
-    let loader = GptDatasetV1::<B>::new_loader_v1(&text, Encoding::gpt2(), opts).context("new loader")?;
+    let loader = GptDatasetV1::<B>::new_loader_v1(&text, &Encoding::gpt2(), opts).context("new loader")?;
     let (inputs, _) = loader.iter().next().expect("fetch a data batch");
     println!("Token IDs:\n{inputs}");
     println!("\nInputs shape: {:?}", inputs.shape());

@@ -8,7 +8,7 @@ use burn::data::dataset::Dataset;
 use burn::prelude::{Backend, Tensor};
 use burn::tensor::Int;
 
-use crate::dataset::internal::Batch;
+pub use crate::dataset::internal::Batch;
 use crate::tokenizer::Tokenizer;
 
 pub type Data<B> = (Tensor<B, 1, Int>, Tensor<B, 1, Int>);
@@ -29,7 +29,7 @@ pub struct LoaderV1Options {
 }
 
 impl<B: Backend> GptDatasetV1<B> {
-    pub fn new<T: Tokenizer>(text: &str, tokenizer: T, max_length: usize, stride: usize) -> anyhow::Result<Self> {
+    pub fn new<T: Tokenizer>(text: &str, tokenizer: &T, max_length: usize, stride: usize) -> anyhow::Result<Self> {
         let token_ids = tokenizer.encode(text).context("tokenize")?;
 
         let mut input_ids = vec![];
@@ -49,7 +49,7 @@ impl<B: Backend> GptDatasetV1<B> {
 
     pub fn new_loader_v1<T: Tokenizer>(
         text: &str,
-        tokenizer: T,
+        tokenizer: &T,
         opts: LoaderV1Options,
     ) -> anyhow::Result<Arc<dyn DataLoader<B, Batch<B>>>> {
         let mut b = DataLoaderBuilder::new(internal::Batcher::default()).batch_size(opts.batch_size);
