@@ -1,8 +1,9 @@
 use std::collections::HashSet;
 
 use anyhow::Context as _;
+use burn::nn::loss::CrossEntropyLossConfig;
 use burn::prelude::*;
-use burn::tensor::{DType, activation};
+use burn::tensor::DType;
 use tiktoken::ext::Encoding;
 
 pub trait Tokenizer<B: Backend> {
@@ -20,7 +21,9 @@ impl<B: Backend> Tokenizer<B> for Encoding {
             .into_vec()
             .map_err(|err| anyhow::anyhow!("conv out ids: {err:?}"))?;
 
-        self.decode_str(&ids).context("decode output ids")
+        //self.decode_str(&ids).context("decode output ids")
+        let b = self.decode(&ids).context("decode out ids")?;
+        Ok(String::from_utf8_lossy(&b).to_string())
     }
 
     fn tokenize(&self, text: &str) -> Tensor<B, 2, Int> {
@@ -42,17 +45,24 @@ pub fn cross_entropy<B: Backend, const D: usize, const D2: usize>(
     // let p = activation::log_softmax(logits, D2);
     // println!("p: {}", p);
 
-    let indices = target_indices.unsqueeze_dim::<D>(D2);
+    // let indices = target_indices.unsqueeze_dim::<D>(D2);
 
-    // let p = p.gather(D2, indices);
-    // println!("p: {}", p);
+    // // let p = p.gather(D2, indices);
+    // // println!("p: {}", p);
 
-    // let p = p.flatten::<1>(0, D2).neg().mean();
-    // println!("p: {}", p);
+    // // let p = p.flatten::<1>(0, D2).neg().mean();
+    // // println!("p: {}", p);
 
-    activation::log_softmax(logits, D2)
-        .gather(D2, indices)
-        .flatten::<1>(0, D2)
-        .neg()
-        .mean()
+    // activation::log_softmax(logits, D2)
+    //     .gather(D2, indices)
+    //     .flatten::<1>(0, D2)
+    //     .neg()
+    //     .mean()
+
+    let logits = logits.flatten::<2>(0, D2 - 1);
+    let target_indices = target_indices.flatten::<1>(0, D2 - 1);
+
+    CrossEntropyLossConfig::new()
+        .init::<B>(&logits.device())
+        .forward(logits, target_indices)
 }

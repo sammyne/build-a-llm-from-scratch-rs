@@ -1,5 +1,6 @@
 mod internal;
 
+use std::fs;
 use std::sync::Arc;
 
 use anyhow::Context;
@@ -47,6 +48,30 @@ impl<B: Backend> GptDatasetV1<B> {
         Ok(out)
     }
 
+    pub fn load_from_json(
+        xpath: &str,
+        ypath: &str,
+        opts: LoaderV1Options,
+        device: &B::Device,
+    ) -> anyhow::Result<Arc<dyn DataLoader<B, Batch<B>>>> {
+        let input_ids = load(xpath, device).context("load input-ids")?;
+        let target_ids = load(ypath, device).context("load target-ids")?;
+
+        let dataset = Self { input_ids, target_ids };
+
+        let mut b = DataLoaderBuilder::new(internal::Batcher::default()).batch_size(opts.batch_size);
+        if opts.num_workers != 0 {
+            b = b.num_workers(opts.num_workers);
+        }
+        if let Some(seed) = opts.shuffle_seed {
+            b = b.shuffle(seed);
+        }
+
+        let out = b.build(dataset);
+
+        Ok(out)
+    }
+
     pub fn new_loader_v1<T: Tokenizer>(
         text: &str,
         tokenizer: &T,
@@ -91,4 +116,15 @@ impl Default for LoaderV1Options {
             num_workers: 0,
         }
     }
+}
+
+fn load<B: Backend>(path: &str, device: &B::Device) -> anyhow::Result<Vec<Tensor<B, 1, Int>>> {
+    let s = fs::read_to_string(path).context("read file")?;
+    let data: Vec<Vec<u64>> = serde_json::from_str(&s).context("json decode")?;
+
+    let out: Vec<_> = data
+        .into_iter()
+        .map(|v| Tensor::<B, 1, Int>::from_ints(v.as_slice(), device))
+        .collect();
+    Ok(out)
 }

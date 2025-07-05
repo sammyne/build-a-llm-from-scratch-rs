@@ -775,6 +775,7 @@ dependencies = [
  "burn",
  "regex",
  "reqwest",
+ "serde_json",
  "tiktoken",
 ]
 
@@ -806,6 +807,8 @@ dependencies = [
  "burn",
  "chapter02",
  "chapter04",
+ "crc32fast",
+ "rand 0.8.5",
  "tiktoken",
 ]
 
