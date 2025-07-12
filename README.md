@@ -10,6 +10,7 @@ bash setup.sh
 
 ## 温馨提示
 - PyTorch 使用 macOS 的 MPS 会导致计算出错，使得训练误差不会按预期收敛
+- burn 的 Module::to_device 转移后的模型不再支持反向传播
 
 ## 参考文献
 - https://github.com/rasbt/LLMs-from-scratch

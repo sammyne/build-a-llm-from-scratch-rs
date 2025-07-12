@@ -40,19 +40,15 @@ impl<B: Backend> GptModel<B> {
         logits
     }
 
-    pub fn new(c: &Config) -> Self {
-        let device = B::Device::default();
-
-        let tok_emb = EmbeddingConfig::new(c.vocab_size, c.emb_dim).init(&device);
-        let pos_emb = EmbeddingConfig::new(c.context_length, c.emb_dim).init(&device);
+    pub fn new(c: &Config, device: &B::Device) -> Self {
+        let tok_emb = EmbeddingConfig::new(c.vocab_size, c.emb_dim).init(device);
+        let pos_emb = EmbeddingConfig::new(c.context_length, c.emb_dim).init(device);
         let drop_emb = Dropout { prob: c.drop_rate };
 
         let trf_blocks: Vec<_> = (0..c.nlayers).map(|_| TransformerBlock::new(c)).collect();
 
         let final_norm = LayerNorm::new(c.emb_dim);
-        let out_head = LinearConfig::new(c.emb_dim, c.vocab_size)
-            .with_bias(false)
-            .init(&device);
+        let out_head = LinearConfig::new(c.emb_dim, c.vocab_size).with_bias(false).init(device);
 
         Self {
             tok_emb,

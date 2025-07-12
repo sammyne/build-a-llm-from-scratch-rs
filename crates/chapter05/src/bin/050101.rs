@@ -11,8 +11,9 @@ type B = Autodiff<NdArray<f32>>;
 
 fn main() -> anyhow::Result<()> {
     B::seed(123);
+    let device = &<B as Backend>::Device::Cpu;
 
-    let model = GptModel::<B>::new(GPT_124M);
+    let model = GptModel::<B>::new(GPT_124M, device);
     let model = model.valid();
 
     let start_context = "Hello, I am";
