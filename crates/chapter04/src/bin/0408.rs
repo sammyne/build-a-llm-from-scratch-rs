@@ -13,7 +13,7 @@ type B = Autodiff<NdArray<f32>>;
 fn main() -> anyhow::Result<()> {
     B::seed(123);
 
-    let device = <B as Backend>::Device::default();
+    let device = &<B as Backend>::Device::default();
 
     let start_context = "Hello, I am";
 
@@ -27,7 +27,7 @@ fn main() -> anyhow::Result<()> {
     let encoded_tensor = Tensor::<B, 1, Int>::from_ints(encoded.as_slice(), &device).unsqueeze::<2>();
     println!("encoded-tensor.shape: {:?}", encoded_tensor.shape());
 
-    let model = GptModel::<B>::new(&GPT_124M);
+    let model = GptModel::<B>::new(&GPT_124M, device);
 
     let infer = model.valid();
 

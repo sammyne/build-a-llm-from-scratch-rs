@@ -11,11 +11,11 @@ type B = Autodiff<NdArray<f32>>;
 fn main() -> anyhow::Result<()> {
     B::seed(123);
 
-    let device = <B as Backend>::Device::default();
+    let device = &<B as Backend>::Device::default();
 
-    let batch = new_batch(&device);
+    let batch = new_batch(device);
 
-    let model = GptModel::<B>::new(&GPT_124M);
+    let model = GptModel::<B>::new(&GPT_124M, device);
 
     let out = model.forward(batch.clone());
 

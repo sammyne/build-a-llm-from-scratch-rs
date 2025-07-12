@@ -97,7 +97,7 @@ fn main() -> anyhow::Result<()> {
 
     // 警告：Module::to_device 转移后的模型不再支持反向传播。
     // 详情参见 burn 的官方文档：https://docs.rs/burn/0.17.1/burn/module/trait.Module.html#tymethod.to_device
-    let model = GptModel::<B>::new(GPT_124M).fork(&device); //.fork(&device);
+    let model = GptModel::<B>::new(GPT_124M, &device);
 
     let optimizer = AdamWConfig::new().with_weight_decay(0.1).init::<B, GptModel<B>>();
 

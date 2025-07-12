@@ -11,10 +11,11 @@ type B = Autodiff<NdArray<f32>>;
 
 fn main() -> anyhow::Result<()> {
     B::seed(123);
+    let device = &<B as Backend>::Device::Cpu;
 
     demo_manual_cross_entropy();
 
-    let model = GptModel::<B>::new(GPT_124M).no_grad();
+    let model = GptModel::<B>::new(GPT_124M, device).no_grad();
 
     let device = <B as Backend>::Device::default();
 

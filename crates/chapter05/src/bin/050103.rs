@@ -1,7 +1,6 @@
 use std::usize;
 
 use anyhow::Context;
-use burn::backend::libtorch::LibTorchDevice;
 use burn::backend::{Autodiff, LibTorch};
 use burn::data::dataloader::DataLoader;
 use burn::prelude::*;
@@ -17,6 +16,8 @@ use tiktoken::ext::Encoding;
 type B = Autodiff<LibTorch>;
 
 fn main() -> anyhow::Result<()> {
+    let device = &<B as Backend>::Device::Cpu;
+
     let tokenizer = Encoding::gpt2();
 
     let text_data = verdict::load().context("load verdict")?;
@@ -68,9 +69,7 @@ fn main() -> anyhow::Result<()> {
         println!("shape(x,y)=({:?},{:?})", x.shape(), y.shape());
     }
 
-    let device = LibTorchDevice::Mps;
-
-    let model = GptModel::<B>::new(GPT_124M).no_grad();
+    let model = GptModel::<B>::new(GPT_124M, &device).no_grad();
     let model = model.to_device(&device);
 
     let train_loss = calc_loss_loader(train_loader.as_ref(), &model, None, &device);
