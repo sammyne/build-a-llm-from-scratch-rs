@@ -14,5 +14,5 @@ rand = "0.8"
 crc32fast = "1.4.2"
 
 [dependencies.burn]
-features = ["autodiff", "ndarray", "tch"]
+features = ["autodiff", "ndarray", "cuda"]
 workspace = true  
