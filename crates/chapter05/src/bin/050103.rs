@@ -1,7 +1,7 @@
 use std::usize;
 
 use anyhow::Context;
-use burn::backend::{Autodiff, LibTorch};
+use burn::backend::{Autodiff, NdArray};
 use burn::data::dataloader::DataLoader;
 use burn::prelude::*;
 use chapter02::dataset::{Batch, GptDatasetV1, LoaderV1Options};
@@ -11,9 +11,9 @@ use chapter05::config::GPT_124M;
 use chapter05::utils::{self, Tokenizer};
 use tiktoken::ext::Encoding;
 
-// type B = Autodiff<NdArray<f32>>;
+type B = Autodiff<NdArray<f32>>;
 // 使用 PyTorch 后端加速明显。
-type B = Autodiff<LibTorch>;
+// type B = Autodiff<LibTorch>;
 
 fn main() -> anyhow::Result<()> {
     let device = &<B as Backend>::Device::Cpu;

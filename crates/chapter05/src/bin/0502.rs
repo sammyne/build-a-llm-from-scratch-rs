@@ -2,8 +2,8 @@ use std::usize;
 
 use anyhow::Context;
 use burn::LearningRate;
-use burn::backend::libtorch::LibTorchDevice;
-use burn::backend::{Autodiff, LibTorch};
+use burn::backend::cuda::CudaDevice;
+use burn::backend::{Autodiff, Cuda};
 use burn::data::dataloader::DataLoader;
 use burn::module::AutodiffModule;
 use burn::optim::{AdamWConfig, GradientsParams, Optimizer};
@@ -18,7 +18,8 @@ use chapter05::utils::Tokenizer;
 use tiktoken::ext::Encoding;
 
 // type B = Autodiff<NdArray<f32>>;
-type B = Autodiff<LibTorch>;
+// type B = Autodiff<LibTorch>;
+type B = Autodiff<Cuda>;
 
 fn main() -> anyhow::Result<()> {
     let tokenizer = Encoding::gpt2();
@@ -41,7 +42,8 @@ fn main() -> anyhow::Result<()> {
     println!("hash(train): {}", crc32fast::hash(train_data.as_bytes()));
 
     B::seed(123);
-    let device = LibTorchDevice::Cpu;
+    // let device = LibTorchDevice::Cpu;
+    let device = CudaDevice::default();
 
     let train_loader = {
         let opts = LoaderV1Options {
@@ -55,24 +57,6 @@ fn main() -> anyhow::Result<()> {
         GptDatasetV1::<B>::new_loader_v1(train_data, &tokenizer, opts).context("load train data")?
     };
 
-    // let train_loader = {
-    //     let opts = LoaderV1Options {
-    //         batch_size: 2,
-    //         max_length: GPT_124M.context_length,
-    //         stride: GPT_124M.context_length,
-    //         drop_last: true,
-    //         shuffle_seed: None,
-    //         ..Default::default()
-    //     };
-
-    //     GptDatasetV1::<B>::load_from_json(
-    //         "../../rasbt/rasbt-train-x.json",
-    //         "../../rasbt/rasbt-train-y.json",
-    //         opts,
-    //         &device,
-    //     )
-    //     .context("load train data")?
-    // };
     let val_loader = {
         let opts = LoaderV1Options {
             batch_size: 2,
