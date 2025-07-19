@@ -294,9 +294,9 @@ fn load_weights_into_gpt2(params: Gpt2Params, model: &mut GptModel<B>) -> anyhow
     );
     for (dst, src) in model.trf_blocks.iter_mut().zip(params.blocks.iter()) {
         let (q_w, k_w, v_w) = tripple_split_2d(&src.attn.c_attn.w, &device)?;
-        checked_assign_param(&mut dst.attn.q.weight, q_w.transpose()).context("load attention query weights")?;
-        checked_assign_param(&mut dst.attn.k.weight, k_w.transpose()).context("load attention key weights")?;
-        checked_assign_param(&mut dst.attn.v.weight, v_w.transpose()).context("load attention value weights")?;
+        checked_assign_param(&mut dst.attn.q.weight, q_w).context("load attention query weights")?;
+        checked_assign_param(&mut dst.attn.k.weight, k_w).context("load attention key weights")?;
+        checked_assign_param(&mut dst.attn.v.weight, v_w).context("load attention value weights")?;
 
         let (q_b, k_b, v_b) = tripple_split_1d(&src.attn.c_attn.b, &device)?;
         checked_assign_param(dst.attn.q.bias.as_mut().expect("miss q-bias"), q_b)
