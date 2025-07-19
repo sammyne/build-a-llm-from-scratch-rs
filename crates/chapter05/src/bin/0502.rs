@@ -86,19 +86,18 @@ fn main() -> anyhow::Result<()> {
 
     let optimizer = AdamWConfig::new().with_weight_decay(0.1).init::<B, GptModel<B>>();
 
-    // 轮次和学习率均加大了。
     let opts = TrainOpts {
         model,
         train_loader: train_loader.as_ref(),
         val_loader: val_loader.as_ref(),
         optimizer,
         device: &device,
-        epoches: 20,
+        epoches: 10,
         eval_freq: 5,
         eval_iter: 5,
         start_context: "Every effort moves you",
         tokenizer: &tokenizer,
-        lr: 0.0008,
+        lr: 0.0004,
     };
 
     //let (train_losses, val_losses, track_tokens_seen) = train_model_simple(opts);
