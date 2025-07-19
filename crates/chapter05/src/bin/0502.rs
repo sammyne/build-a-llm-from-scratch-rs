@@ -1,13 +1,14 @@
 use std::usize;
 
 use anyhow::Context;
-use burn::backend::libtorch::LibTorchDevice;
 use burn::LearningRate;
+use burn::backend::libtorch::LibTorchDevice;
 use burn::backend::{Autodiff, LibTorch};
 use burn::data::dataloader::DataLoader;
 use burn::module::AutodiffModule;
 use burn::optim::{AdamWConfig, GradientsParams, Optimizer};
 use burn::prelude::*;
+use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder};
 use burn::tensor::backend::AutodiffBackend;
 use chapter02::dataset::{Batch, GptDatasetV1, LoaderV1Options};
 use chapter02::verdict;
@@ -51,7 +52,7 @@ fn main() -> anyhow::Result<()> {
             max_length: GPT_124M.context_length,
             stride: GPT_124M.context_length,
             drop_last: true,
-            shuffle_seed: Some(1234),
+            shuffle_seed: Some(123),
             ..Default::default()
         };
         GptDatasetV1::<B>::new_loader_v1(train_data, &tokenizer, opts).context("load train data")?
@@ -218,6 +219,11 @@ where
 
         generate_and_print_sample(model.clone(), tokenizer, device, start_context);
     }
+
+    // 保存模型用于后续教程
+    const MODEL_PATH: &str = "gpt_124m_trained.burn";
+    let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
+    model.save_file(MODEL_PATH, &recorder).expect("save model");
 
     (train_losses, val_losses, track_tokens_seen)
 }
