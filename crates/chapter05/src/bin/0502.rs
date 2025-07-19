@@ -1,9 +1,9 @@
 use std::usize;
 
 use anyhow::Context;
+use burn::backend::libtorch::LibTorchDevice;
 use burn::LearningRate;
-use burn::backend::cuda::CudaDevice;
-use burn::backend::{Autodiff, Cuda};
+use burn::backend::{Autodiff, LibTorch};
 use burn::data::dataloader::DataLoader;
 use burn::module::AutodiffModule;
 use burn::optim::{AdamWConfig, GradientsParams, Optimizer};
@@ -18,8 +18,8 @@ use chapter05::utils::Tokenizer;
 use tiktoken::ext::Encoding;
 
 // type B = Autodiff<NdArray<f32>>;
-// type B = Autodiff<LibTorch>;
-type B = Autodiff<Cuda>;
+type B = Autodiff<LibTorch>;
+// type B = Autodiff<Cuda>;
 
 fn main() -> anyhow::Result<()> {
     let tokenizer = Encoding::gpt2();
@@ -42,8 +42,8 @@ fn main() -> anyhow::Result<()> {
     println!("hash(train): {}", crc32fast::hash(train_data.as_bytes()));
 
     B::seed(123);
-    // let device = LibTorchDevice::Cpu;
-    let device = CudaDevice::default();
+    let device = LibTorchDevice::Cpu;
+    // let device = CudaDevice::default();
 
     let train_loader = {
         let opts = LoaderV1Options {
