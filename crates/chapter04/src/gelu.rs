@@ -14,6 +14,6 @@ impl Gelu {
             .mul_scalar((2.0 / PI).sqrt())
             .tanh();
 
-        x.mul_scalar(0.5) * tanh.mul_scalar(0.5)
+        x.mul_scalar(0.5) * (tanh.add_scalar(1.0))
     }
 }
