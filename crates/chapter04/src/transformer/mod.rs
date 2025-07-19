@@ -11,11 +11,11 @@ use crate::{Config, FeedForward, LayerNorm};
 
 #[derive(Debug, Module)]
 pub struct TransformerBlock<B: Backend> {
-    attn: MultiHeadAttention<B>,
-    ff: FeedForward<B>,
-    norm1: LayerNorm<B>,
-    norm2: LayerNorm<B>,
-    drop_shortcut: Dropout,
+    pub attn: MultiHeadAttention<B>,
+    pub ff: FeedForward<B>,
+    pub norm1: LayerNorm<B>,
+    pub norm2: LayerNorm<B>,
+    pub drop_shortcut: Dropout,
 }
 
 impl<B: Backend> TransformerBlock<B> {
@@ -46,8 +46,8 @@ impl<B: Backend> TransformerBlock<B> {
             c.qkv_bias,
         );
         let ff = FeedForward::new(c);
-        let norm1 = LayerNorm::<_, 3>::new(c.emb_dim);
-        let norm2 = LayerNorm::<_, 3>::new(c.emb_dim);
+        let norm1 = LayerNorm::new(c.emb_dim);
+        let norm2 = LayerNorm::new(c.emb_dim);
         let drop_shortcut = Dropout { prob: c.drop_rate };
 
         Self {

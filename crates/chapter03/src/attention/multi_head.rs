@@ -75,7 +75,6 @@ impl<B: Backend> MultiHeadAttention<B> {
         let mask = Tensor::<B, 2>::ones([context_length, context_length], &device)
             .triu(1)
             .unsqueeze::<4>();
-        // let mask = Param::from_tensor(mask);
 
         Self {
             d_out,

@@ -1,0 +1,10 @@
+[project]
+name = "gpt2"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "tensorflow>=2.19.0",
+    "tqdm>=4.67.1",
+]

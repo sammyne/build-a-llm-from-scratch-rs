@@ -6,20 +6,20 @@ use burn::tensor::Tensor;
 pub use dummy::*;
 
 #[derive(Debug, Module)]
-pub struct LayerNorm<B: Backend, const D: usize = 3> {
-    eps: f64,
-    scale: Param<Tensor<B, D>>,
-    shift: Param<Tensor<B, D>>,
+pub struct LayerNorm<B: Backend> {
+    pub eps: f64,
+    pub scale: Param<Tensor<B, 1>>,
+    pub shift: Param<Tensor<B, 1>>,
 }
 
-impl<B: Backend, const D: usize> LayerNorm<B, D> {
-    pub fn forward(&self, x: Tensor<B, D>) -> Tensor<B, D> {
+impl<B: Backend> LayerNorm<B> {
+    pub fn forward<const D: usize>(&self, x: Tensor<B, D>) -> Tensor<B, D> {
         let dim = x.dims().len() - 1;
 
         let (var, mean) = x.clone().var_mean_bias(dim);
         let norm_x = (x - mean) / (var + self.eps).sqrt();
 
-        self.scale.val() * norm_x + self.shift.val()
+        self.scale.val().unsqueeze() * norm_x + self.shift.val().unsqueeze()
     }
 
     pub fn new(embed_dim: usize) -> Self {
@@ -27,8 +27,8 @@ impl<B: Backend, const D: usize> LayerNorm<B, D> {
 
         let device = B::Device::default();
 
-        let scale = Param::from_tensor(Tensor::<B, 1>::ones([embed_dim], &device).unsqueeze::<D>());
-        let shift = Param::from_tensor(Tensor::<B, 1>::zeros([embed_dim], &device).unsqueeze::<D>());
+        let scale = Param::from_tensor(Tensor::<B, 1>::ones([embed_dim], &device));
+        let shift = Param::from_tensor(Tensor::<B, 1>::zeros([embed_dim], &device));
 
         Self { eps, scale, shift }
     }

@@ -809,6 +809,8 @@ dependencies = [
  "chapter04",
  "crc32fast",
  "rand 0.8.5",
+ "serde",
+ "serde_json",
  "tiktoken",
 ]
 
