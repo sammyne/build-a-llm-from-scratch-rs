@@ -1,5 +1,6 @@
 use std::sync::LazyLock;
 
+#[derive(Debug, Clone)]
 pub struct Config {
     pub vocab_size: usize,
     pub context_length: usize,

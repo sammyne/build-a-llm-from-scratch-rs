@@ -3,7 +3,8 @@ use std::collections::HashSet;
 use anyhow::Context as _;
 use burn::nn::loss::CrossEntropyLossConfig;
 use burn::prelude::*;
-use burn::tensor::DType;
+use burn::tensor::{DType, activation};
+use chapter04::GptModel;
 use tiktoken::ext::Encoding;
 
 pub trait Tokenizer<B: Backend> {
@@ -65,4 +66,49 @@ pub fn cross_entropy<B: Backend, const D: usize, const D2: usize>(
     CrossEntropyLossConfig::new()
         .init::<B>(&logits.device())
         .forward(logits, target_indices)
+}
+
+pub fn generate<B: Backend<IntElem = i64>>(
+    model: &GptModel<B>,
+    mut idx: Tensor<B, 2, Int>,
+    max_new_tokens: usize,
+    context_size: usize,
+    temperature: Option<f32>,
+    topk: Option<usize>,
+    eos_id: Option<usize>,
+) -> Tensor<B, 2, Int> {
+    let context_size = context_size as i32;
+
+    for _ in 0..max_new_tokens {
+        let idx_cond = idx.clone().slice(s![.., -context_size..]);
+
+        let logits = model.forward(idx_cond);
+        let mut logits = logits.slice(s![.., -1, ..]).squeeze(1);
+
+        if let Some(k) = topk {
+            let top_logits = logits.clone().squeeze::<1>(0).topk(k, 0);
+            let v = top_logits.min().into_scalar();
+            let discarded = logits.clone().lower(logits.clone().full_like(v));
+            logits = logits.mask_fill(discarded, f32::NEG_INFINITY);
+        }
+
+        let dim = logits.dims().len() - 1;
+        let idx_next = match temperature {
+            Some(t) => {
+                logits = logits / t;
+                let probas = activation::softmax(logits.clone(), dim);
+                todo!("补充 multinomial 的实现");
+            }
+            None => logits.argmax(dim),
+        };
+
+        match eos_id {
+            Some(v) if idx_next.clone().squeeze::<1>(0).into_scalar() == v as i64 => break,
+            _ => {}
+        }
+
+        idx = Tensor::cat(vec![idx, idx_next], 1);
+    }
+
+    idx
 }

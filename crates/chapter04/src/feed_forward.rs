@@ -7,9 +7,9 @@ use crate::{Config, Gelu};
 
 #[derive(Debug, Module)]
 pub struct FeedForward<B: Backend> {
-    linear1: Linear<B>,
-    gelu: Gelu,
-    linear2: Linear<B>,
+    pub linear1: Linear<B>,
+    pub gelu: Gelu,
+    pub linear2: Linear<B>,
 }
 
 impl<B: Backend> FeedForward<B> {
