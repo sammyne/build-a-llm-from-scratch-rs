@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::usize;
 
 use anyhow::Context;
@@ -9,7 +9,7 @@ use burn::data::dataloader::DataLoader;
 use burn::module::AutodiffModule;
 use burn::optim::{AdamWConfig, GradientsParams, Optimizer};
 use burn::prelude::*;
-use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder, Recorder};
+use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder, PrettyJsonFileRecorder, Recorder};
 use burn::tensor::backend::AutodiffBackend;
 use chapter02::dataset::{Batch, GptDatasetV1, LoaderV1Options};
 use chapter02::verdict;
@@ -19,9 +19,7 @@ use chapter05::loss;
 use chapter05::utils::Tokenizer;
 use tiktoken::ext::Encoding;
 
-// type B = Autodiff<NdArray<f32>>;
 type B = Autodiff<LibTorch>;
-// type B = Autodiff<Cuda>;
 
 fn main() -> anyhow::Result<()> {
     let tokenizer = Encoding::gpt2();
@@ -90,12 +88,12 @@ fn main() -> anyhow::Result<()> {
         val_loader: val_loader.as_ref(),
         optimizer,
         device: &device,
-        epoches: 20,
+        epoches: 10,
         eval_freq: 5,
         eval_iter: 5,
         start_context: "Every effort moves you",
         tokenizer: &tokenizer,
-        lr: 0.0008,
+        lr: 0.0004,
     };
 
     let (model, optimizer, ..) = train_model_simple(opts);
@@ -105,12 +103,9 @@ fn main() -> anyhow::Result<()> {
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
     model.save_file(MODEL_PATH, &recorder).expect("save model");
 
-    // FIXME: 修复无法持久化 optimizer 的问题。
-    // let optimizer_path = PathBuf::from("gpt_124m_optimizer");
-    // let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
-    // let r = optimizer.to_record();
-    // recorder.save_item(r, optimizer_path).context("save optimizer")?;
-    // optimizer.save_file(OPTIMIZER_PATH, &recorder).expect("save optimizer");
+    let optimizer_path = PathBuf::from("gpt_124m_optimizer");
+    let recorder = PrettyJsonFileRecorder::<FullPrecisionSettings>::new();
+    recorder.record(optimizer.to_record(), optimizer_path).context("record optimizer")?;
 
     Ok(())
 }
