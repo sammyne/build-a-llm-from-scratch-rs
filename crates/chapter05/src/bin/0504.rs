@@ -105,7 +105,9 @@ fn main() -> anyhow::Result<()> {
 
     let optimizer_path = PathBuf::from("gpt_124m_optimizer");
     let recorder = PrettyJsonFileRecorder::<FullPrecisionSettings>::new();
-    recorder.record(optimizer.to_record(), optimizer_path).context("record optimizer")?;
+    recorder
+        .record(optimizer.to_record(), optimizer_path)
+        .context("record optimizer")?;
 
     Ok(())
 }

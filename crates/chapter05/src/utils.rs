@@ -91,13 +91,16 @@ pub fn generate<B: Backend<IntElem = i64>>(
             let discarded = logits.clone().lower(logits.clone().full_like(v));
             logits = logits.mask_fill(discarded, f32::NEG_INFINITY);
         }
+        // println!("probas.shape: {:?}", logits.shape());
 
         let dim = logits.dims().len() - 1;
         let idx_next = match temperature {
             Some(t) => {
                 logits = logits / t;
                 let probas = activation::softmax(logits.clone(), dim);
-                todo!("补充 multinomial 的实现");
+                // 自己实现的 multinomial 目前看起来太吃内存，导致 OOM。
+                let _ = crate::rand::multinomial(probas);
+                todo!()
             }
             None => logits.argmax(dim),
         };
