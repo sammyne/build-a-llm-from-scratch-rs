@@ -31,8 +31,7 @@ fn main() -> anyhow::Result<()> {
 
     B::seed(123);
 
-    // let temperature = 1.5.into();
-    let temperature = None;
+    let temperature = 1.5.into();
     let token_ids = utils::generate(&model, idx, 25, settings.context_length, temperature, Some(50), None);
     let out = tokenizer.detokenize(token_ids).context("decode output")?;
     println!("Output text:\n{out}");

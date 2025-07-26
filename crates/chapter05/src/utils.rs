@@ -99,8 +99,7 @@ pub fn generate<B: Backend<IntElem = i64>>(
                 logits = logits / t;
                 let probas = activation::softmax(logits.clone(), dim);
                 // 自己实现的 multinomial 目前看起来太吃内存，导致 OOM。
-                let _ = crate::rand::multinomial(probas);
-                todo!()
+                crate::rand::multinomial(probas)
             }
             None => logits.argmax(dim),
         };
