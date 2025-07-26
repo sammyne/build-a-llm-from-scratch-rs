@@ -38,7 +38,7 @@ fn main() -> anyhow::Result<()> {
     for (x, y) in train_loader.iter() {
         println!("Input batch dimensions: {:?}", x.shape());
         println!("Label batch dimensions: {:?}", y.shape());
-        break
+        break;
     }
 
     println!("{} training batches", train_loader.iter().count());
