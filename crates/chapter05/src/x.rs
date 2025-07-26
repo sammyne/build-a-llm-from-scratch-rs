@@ -16,10 +16,7 @@ impl<B: Backend> TensorExt<B> for Tensor<B, 2> {
         // self.matmul(v)
 
         // 实现方式 2：解决大 d1 导致 #1 OOM 的问题
-        let data: Vec<_> = self
-            .iter_dim(0)
-            .map(|v| v.squeeze::<1>(0).cumsum())
-            .collect();
+        let data: Vec<_> = self.iter_dim(0).map(|v| v.squeeze::<1>(0).cumsum()).collect();
         Tensor::stack::<2>(data, 0)
     }
 
