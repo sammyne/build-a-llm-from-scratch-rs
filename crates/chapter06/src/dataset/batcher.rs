@@ -19,4 +19,3 @@ impl<B: Backend> burn::data::dataloader::batcher::Batcher<B, Data<B>, Batch<B>> 
         (inputs, targets)
     }
 }
-

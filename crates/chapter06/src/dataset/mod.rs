@@ -3,13 +3,12 @@ mod batcher;
 use std::ops::Deref;
 
 use anyhow::Context as _;
+pub use batcher::{Batch, Batcher};
 use burn::data::dataloader::{DataLoader, DataLoaderBuilder};
 use burn::data::dataset::Dataset;
 use burn::prelude::*;
 use chapter02::tokenizer::Tokenizer;
 use polars::prelude::*;
-
-pub use batcher::{Batch, Batcher};
 
 pub type Data<B> = (Tensor<B, 1, Int>, Tensor<B, 1, Int>);
 
