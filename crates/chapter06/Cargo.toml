@@ -5,6 +5,12 @@ edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
+chapter02.workspace = true
+tiktoken.workspace = true
+
+[dependencies.burn]
+features = ["autodiff", "ndarray", "tch"]
+workspace = true  
 
 [dependencies.polars]
 features = ["dtype-struct", "lazy", "random", "strings"]
