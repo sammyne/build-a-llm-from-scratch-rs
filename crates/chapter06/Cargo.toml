@@ -6,6 +6,8 @@ edition = "2024"
 [dependencies]
 anyhow.workspace = true
 chapter02.workspace = true
+chapter04.workspace = true
+chapter05 = { version = "0.1.0", path = "../chapter05" }
 tiktoken.workspace = true
 
 [dependencies.burn]

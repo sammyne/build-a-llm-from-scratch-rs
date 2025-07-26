@@ -921,6 +921,8 @@ dependencies = [
  "anyhow",
  "burn",
  "chapter02",
+ "chapter04",
+ "chapter05",
  "polars",
  "tiktoken",
 ]
