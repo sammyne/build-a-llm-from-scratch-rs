@@ -1,5 +1,6 @@
-use burn::{backend::NdArray, prelude::Backend, tensor::Tensor};
-
+use burn::backend::NdArray;
+use burn::prelude::Backend;
+use burn::tensor::Tensor;
 use chapter05::rand;
 
 fn main() {
