@@ -86,13 +86,19 @@ fn main() -> anyhow::Result<()> {
     let validation_loader = dataset::load(validation_dataset, Default::default());
     let test_loader = dataset::load(test_dataset, Default::default());
 
-    let train_accuracy = loss::calc_accuracy_loader(train_loader, &model, device, Some(10));
-    let val_accuracy = loss::calc_accuracy_loader(validation_loader, &model, device, Some(10));
-    let test_accuracy = loss::calc_accuracy_loader(test_loader, &model, device, Some(10));
-
+    let train_accuracy = loss::calc_accuracy_loader(train_loader.as_ref(), &model, device, Some(10));
+    let val_accuracy = loss::calc_accuracy_loader(validation_loader.as_ref(), &model, device, Some(10));
+    let test_accuracy = loss::calc_accuracy_loader(test_loader.as_ref(), &model, device, Some(10));
     println!("Training accuracy: {:.2}", train_accuracy * 100.0);
     println!("Validation accuracy: {:.2}", val_accuracy * 100.0);
     println!("Test accuracy: {:.2}", test_accuracy * 100.0);
+
+    let train_loss = loss::calc_loss_loader(train_loader.as_ref(), model.clone(), device, None);
+    let val_loss = loss::calc_loss_loader(validation_loader.as_ref(), model.clone(), device, None);
+    let test_loss = loss::calc_loss_loader(test_loader.as_ref(), model.clone(), device, None);
+    println!("Training loss: {:.3}", train_loss);
+    println!("Validation loss: {:.3}", val_loss);
+    println!("Test loss: {:.3}", test_loss);
 
     Ok(())
 }
