@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::Instant;
 
 use anyhow::Context as _;
@@ -9,7 +9,7 @@ use burn::module::Module;
 use burn::nn::LinearConfig;
 use burn::optim::{AdamWConfig, GradientsParams, Optimizer};
 use burn::prelude::Backend;
-use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder, Recorder as _};
+use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder};
 use burn::tensor::backend::AutodiffBackend;
 use chapter04::GptModel;
 use chapter05::gpt2;
