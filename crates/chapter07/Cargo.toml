@@ -1,0 +1,16 @@
+[package]
+name = "chapter07"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+serde_json.workspace = true
+
+[dependencies.serde]
+features = ["derive"]
+workspace = true
+
+[dependencies.reqwest]
+features = ["blocking"]
+workspace = true
