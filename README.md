@@ -1,5 +1,8 @@
 # Build a LLM from scratch (Rust 语言版)
 
+此项目用 [tracel-ai/burn](https://github.com/tracel-ai/burn) 库复现《uild a Large Language Model (From Scratch)》一书的
+PyTorch 代码。
+
 ## 快速开始
 
 ## 进度
