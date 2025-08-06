@@ -17,11 +17,11 @@ fn main() -> anyhow::Result<()> {
     println!("Example entry: {}\n", data[50]);
     println!("Another example entry: {}\n", data[999]);
 
-    let model_input = format_input(&data[50]);
+    let model_input = utils::format_input(&data[50]);
     let desired_response = format!("\n\n### Response:\n{}", data[50].output);
     println!("{model_input}{desired_response}");
 
-    let model_input = format_input(&data[999]);
+    let model_input = utils::format_input(&data[999]);
     let desired_response = format!("\n\n### Response:\n{}", data[999].output);
     println!("\n\n{model_input}{desired_response}");
 
@@ -59,20 +59,4 @@ where
     }
 
     utils::load_json(path).context("load")
-}
-
-/// Listing 7.2 Implementing the prompt formatting function
-fn format_input(entry: &Data) -> String {
-    let instruction_text = format!(
-        "Below is an instruction that describes a task. Write a response that appropriately completes the request. \
-        \n\n### Instruction:\n{}",
-        entry.instruction
-    );
-
-    let input_text = match &entry.input {
-        Some(v) if !v.is_empty() => format!("\n\n### Input:\n{v}"),
-        _ => "".to_owned(),
-    };
-
-    instruction_text + &input_text
 }
