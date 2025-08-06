@@ -932,9 +932,12 @@ name = "chapter07"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "burn",
+ "chapter02",
  "reqwest",
  "serde",
  "serde_json",
+ "tiktoken",
 ]
 
 [[package]]

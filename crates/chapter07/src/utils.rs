@@ -19,6 +19,22 @@ impl Display for Data {
     }
 }
 
+/// Listing 7.2 Implementing the prompt formatting function
+pub fn format_input(entry: &Data) -> String {
+    let instruction_text = format!(
+        "Below is an instruction that describes a task. Write a response that appropriately completes the request. \
+        \n\n### Instruction:\n{}",
+        entry.instruction
+    );
+
+    let input_text = match &entry.input {
+        Some(v) if !v.is_empty() => format!("\n\n### Input:\n{v}"),
+        _ => "".to_owned(),
+    };
+
+    instruction_text + &input_text
+}
+
 pub fn load_json<P>(file_path: P) -> anyhow::Result<Vec<Data>>
 where
     P: AsRef<Path>,
