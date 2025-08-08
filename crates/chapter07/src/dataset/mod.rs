@@ -12,7 +12,6 @@ pub use crate::dataset::batcher::Batch;
 use crate::dataset::batcher::CollatedBatcher;
 use crate::utils;
 
-#[derive(Clone, Copy)]
 pub struct DataLoaderOptions<B: Backend> {
     pub batch_size: usize,
     pub shuffle_seed: Option<u64>,
@@ -55,7 +54,7 @@ impl Dataset<Vec<u32>> for InstructionDataset {
 
 pub fn load<B: Backend>(
     mut dataset: InstructionDataset,
-    opts: DataLoaderOptions<B>,
+    opts: &DataLoaderOptions<B>,
 ) -> Arc<dyn DataLoader<B, Batch<B>>> {
     let batcher = CollatedBatcher {
         collate: opts.collate_fn,

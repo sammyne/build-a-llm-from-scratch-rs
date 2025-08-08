@@ -11,14 +11,8 @@ type Device = <B as Backend>::Device;
 
 fn main() -> anyhow::Result<()> {
     const FILE_PATH: &str = "instruction-data.json";
-    let data = utils::load_json(FILE_PATH).context("load data")?;
 
-    let train_portion = (data.len() as f32 * 0.85) as usize;
-    let test_portion = (data.len() as f32 * 0.1) as usize;
-
-    let train_data = &data[..train_portion];
-    let test_data = &data[train_portion..][..test_portion];
-    let val_data = &data[(train_portion + test_portion)..];
+    let (train_data, test_data, val_data) = utils::load_and_split_data(FILE_PATH).context("load and split")?;
 
     let tokenizer = Encoding::gpt2();
 
@@ -38,14 +32,14 @@ fn main() -> anyhow::Result<()> {
         }
     };
 
-    let train_dataset = InstructionDataset::new(train_data, &tokenizer).context("build train dataset")?;
-    let train_loader = dataset::load(train_dataset, opts);
+    let train_dataset = InstructionDataset::new(&train_data, &tokenizer).context("build train dataset")?;
+    let train_loader = dataset::load(train_dataset, &opts);
 
-    let test_dataset = InstructionDataset::new(test_data, &tokenizer).context("build test dataset")?;
-    let _test_loader = dataset::load(test_dataset, opts);
+    let test_dataset = InstructionDataset::new(&test_data, &tokenizer).context("build test dataset")?;
+    let _test_loader = dataset::load(test_dataset, &opts);
 
-    let val_dataset = InstructionDataset::new(val_data, &tokenizer).context("build val dataset")?;
-    let _val_loader = dataset::load(val_dataset, opts);
+    let val_dataset = InstructionDataset::new(&val_data, &tokenizer).context("build val dataset")?;
+    let _val_loader = dataset::load(val_dataset, &opts);
 
     println!("Train Loader:");
     for (inputs, targets) in train_loader.iter() {

@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::PAD_TOKEN_ID;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Data {
     pub instruction: String,
     pub input: Option<String>,
@@ -94,4 +94,17 @@ where
     let out = serde_json::from_reader(f).context("json decode")?;
 
     Ok(out)
+}
+
+pub fn load_and_split_data<P: AsRef<Path>>(file_path: P) -> anyhow::Result<(Vec<Data>, Vec<Data>, Vec<Data>)> {
+    let data = load_json(file_path).context("load file")?;
+
+    let train_portion = (data.len() as f32 * 0.85) as usize;
+    let test_portion = (data.len() as f32 * 0.1) as usize;
+
+    let train_data = &data[..train_portion];
+    let test_data = &data[train_portion..][..test_portion];
+    let val_data = &data[(train_portion + test_portion)..];
+
+    Ok((train_data.to_vec(), test_data.to_vec(), val_data.to_vec()))
 }
