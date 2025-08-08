@@ -72,7 +72,7 @@ pub fn custom_collate_fn<B: Backend, T: AsRef<[u32]>>(
 /// Listing 7.2 Implementing the prompt formatting function
 pub fn format_input(entry: &Data) -> String {
     let instruction_text = format!(
-        "Below is an instruction that describes a task. Write a response that appropriately completes the request. \
+        "Below is an instruction that describes a task. Write a response that appropriately completes the request.\
         \n\n### Instruction:\n{}",
         entry.instruction
     );
