@@ -86,7 +86,13 @@ pub fn load_settings_and_params(data_dir: &Path) -> anyhow::Result<(Config, Para
     }
     let c = load_settings(&p).context("load config")?;
 
-    let p = data_dir.join("params-124m.json");
+    // 从 data_dir 推断出模型规模
+    let size = match data_dir.file_name() {
+        Some(name) if name.eq_ignore_ascii_case("355m") => "355m",
+        _ => "124m", // 默认使用 124M 模型
+    };
+
+    let p = data_dir.join(format!("params-{size}.json"));
     if !p.exists() {
         return Err(anyhow::anyhow!("GPT-2 params file not found at {p:?}"));
     }
