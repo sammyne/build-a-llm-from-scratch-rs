@@ -3,7 +3,11 @@ use std::fs::File;
 use std::path::Path;
 
 use anyhow::Context as _;
+use burn::prelude::Backend;
+use burn::tensor::{Int, Tensor};
 use serde::{Deserialize, Serialize};
+
+use crate::PAD_TOKEN_ID;
 
 #[derive(Serialize, Deserialize)]
 pub struct Data {
@@ -17,6 +21,52 @@ impl Display for Data {
         let json = serde_json::to_string(self).expect("serde-json::to_string");
         write!(f, "{json}")
     }
+}
+
+/// Listing 7.5 Implementing a custom batch collate function
+pub fn custom_collate_fn<B: Backend, T: AsRef<[u32]>>(
+    batch: &[T],
+    pad_token_id: Option<u32>,
+    ignored_index: Option<i32>,
+    allowed_max_length: Option<usize>,
+    device: &B::Device,
+) -> (Tensor<B, 2, Int>, Tensor<B, 2, Int>) {
+    let batch_max_length = batch.iter().map(|x| x.as_ref().len()).max().unwrap_or(0) + 1;
+    let pad_token_id = pad_token_id.unwrap_or(PAD_TOKEN_ID);
+    let ignored_index = ignored_index.unwrap_or(-100);
+
+    let mut inputs_lst = Vec::with_capacity(batch.len());
+    let mut targets_lst = Vec::with_capacity(batch.len());
+    for item in batch {
+        let mut padded = item.as_ref().to_vec();
+
+        padded.resize(batch_max_length, pad_token_id);
+        let mut inputs = Tensor::<B, 1, Int>::from_ints(&padded[..batch_max_length - 1], device);
+
+        // 将第一个 pad_token_id 往后的所有 target 元素置为 ignored_index。
+        let mut targets = {
+            let p = &padded[1..];
+            let mut v = p.iter().map(|v| *v as i32).collect::<Vec<_>>();
+            for (a, b) in v.iter_mut().rev().zip(p.iter().rev().skip(1)) {
+                if b != &pad_token_id {
+                    break;
+                }
+                *a = ignored_index;
+            }
+
+            Tensor::<B, 1, Int>::from_ints(v.as_slice(), device)
+        };
+
+        if let Some(n) = allowed_max_length {
+            inputs = inputs.slice(0..n);
+            targets = targets.slice(0..n);
+        }
+
+        inputs_lst.push(inputs);
+        targets_lst.push(targets);
+    }
+
+    (Tensor::stack(inputs_lst, 0), Tensor::stack(targets_lst, 0))
 }
 
 /// Listing 7.2 Implementing the prompt formatting function
