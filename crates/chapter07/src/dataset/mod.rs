@@ -1,5 +1,6 @@
 mod batcher;
 
+use std::path::Path;
 use std::sync::Arc;
 
 use anyhow::Context;
@@ -75,4 +76,50 @@ pub fn load<B: Backend>(
     }
 
     b.build(dataset)
+}
+
+/// 返回（训练数据集，测试数据集，验证数据集）
+pub fn load_and_split<B, P, T>(
+    file_path: P,
+    tokenizer: &T,
+) -> anyhow::Result<(
+    Arc<dyn DataLoader<B, Batch<B>>>,
+    Arc<dyn DataLoader<B, Batch<B>>>,
+    Arc<dyn DataLoader<B, Batch<B>>>,
+)>
+where
+    B: Backend,
+    P: AsRef<Path>,
+    T: Tokenizer,
+{
+    let (train_data, test_data, val_data) = crate::utils::load_and_split_data(file_path).context("load")?;
+
+    const BATCH_SIZE: usize = 8;
+
+    let mut opts = {
+        let customized_collate_fn = |batch: &[Vec<u32>], device: &B::Device| {
+            utils::custom_collate_fn::<B, _>(batch, None, None, Some(1024), device)
+        };
+        DataLoaderOptions {
+            batch_size: BATCH_SIZE,
+            shuffle_seed: Some(20250808),
+            num_workers: 0,
+            drop_last: true,
+            collate_fn: customized_collate_fn,
+        }
+    };
+
+    let train_dataset = InstructionDataset::new(&train_data, tokenizer).context("build train dataset")?;
+    let train_loader = load(train_dataset, &opts);
+
+    opts.shuffle_seed = None;
+    opts.drop_last = false;
+
+    let test_dataset = InstructionDataset::new(&test_data, tokenizer).context("build test dataset")?;
+    let test_loader = load(test_dataset, &opts);
+
+    let val_dataset = InstructionDataset::new(&val_data, tokenizer).context("build val dataset")?;
+    let val_loader = load(val_dataset, &opts);
+
+    Ok((train_loader, test_loader, val_loader))
 }

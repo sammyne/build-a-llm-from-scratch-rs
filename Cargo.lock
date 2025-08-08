@@ -936,6 +936,7 @@ dependencies = [
  "chapter02",
  "chapter04",
  "chapter05",
+ "chapter06",
  "reqwest",
  "serde",
  "serde_json",
