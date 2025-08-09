@@ -3,6 +3,11 @@
 此项目用 [tracel-ai/burn](https://github.com/tracel-ai/burn) 库复现《Build a Large Language Model (From Scratch)》一书的
 PyTorch 代码。
 
+## 环境
+两种开发模式
+1. Debian 12
+2. 用 docker/Dockerfile 描述的 docker 容器编译好程序，传到 Google Colab 运行
+
 ## 快速开始
 
 ## 进度
@@ -17,6 +22,20 @@ PyTorch 代码。
 ## 温馨提示
 - PyTorch 使用 macOS 的 MPS 会导致计算出错，使得训练误差不会按预期收敛
 - burn 的 Module::to_device 转移后的模型不再支持反向传播
+- google colab 需要使用下述 python 代码更新 `LD_LIBRARY_PATH` 环境变量，使得编译出来的可执行文件可以找到 `libtorch_cuda.so`、
+  `libtorch_cpu.so` 和 `libc10.so` 等库
+  ```python
+  import os
+  import os.path
+  import torch
+
+  # 将 pytorch 内置的 libtorch 加到 LD_LIBRARY_PATH
+  os.environ['LD_LIBRARY_PATH'] = os.path.dirname(torch.__file__)+'/lib:'+os.environ['LD_LIBRARY_PATH']
+  ```
+  以下代码无法更新 `LD_LIBRARY_PATH`
+  ```
+  !export LD_LIBRARY_PATH=/usr/local/lib/python3.11/dist-packages/torch/lib/:$LD_LIBRARY_PATH
+  ```
 
 ## 参考文献
 - https://github.com/rasbt/LLMs-from-scratch
