@@ -9,6 +9,7 @@ chapter02.workspace = true
 chapter04.workspace = true
 chapter05 = { version = "0.1.0", path = "../chapter05" }
 chapter06 = { version = "0.1.0", path = "../chapter06" }
+indicatif = "0.18.0"
 serde_json.workspace = true
 tiktoken.workspace = true
 

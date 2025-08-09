@@ -9,11 +9,18 @@ use serde::{Deserialize, Serialize};
 
 use crate::PAD_TOKEN_ID;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Data {
     pub instruction: String,
     pub input: Option<String>,
     pub output: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DataWithModelResponse {
+    #[serde(flatten)]
+    pub data: Data,
+    pub model_response: String,
 }
 
 impl Display for Data {
