@@ -17,6 +17,10 @@ tiktoken.workspace = true
 features = ["autodiff", "ndarray", "tch"]
 workspace = true  
 
+[dependencies.clap]
+features = ["derive"]
+version = "4.5"
+
 [dependencies.reqwest]
 features = ["blocking"]
 workspace = true

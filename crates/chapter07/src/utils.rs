@@ -1,10 +1,12 @@
 use std::fmt::Display;
 use std::fs::File;
+use std::ops::Deref;
 use std::path::Path;
 
 use anyhow::Context as _;
 use burn::prelude::Backend;
 use burn::tensor::{Int, Tensor};
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use crate::PAD_TOKEN_ID;
@@ -27,6 +29,14 @@ impl Display for Data {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let json = serde_json::to_string(self).expect("serde-json::to_string");
         write!(f, "{json}")
+    }
+}
+
+impl Deref for DataWithModelResponse {
+    type Target = Data;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
     }
 }
 
@@ -92,9 +102,10 @@ pub fn format_input(entry: &Data) -> String {
     instruction_text + &input_text
 }
 
-pub fn load_json<P>(file_path: P) -> anyhow::Result<Vec<Data>>
+pub fn load_json<P, T>(file_path: P) -> anyhow::Result<Vec<T>>
 where
     P: AsRef<Path>,
+    T: DeserializeOwned,
 {
     let f = File::open(file_path.as_ref()).context("open file")?;
 
@@ -103,7 +114,11 @@ where
     Ok(out)
 }
 
-pub fn load_and_split_data<P: AsRef<Path>>(file_path: P) -> anyhow::Result<(Vec<Data>, Vec<Data>, Vec<Data>)> {
+pub fn load_and_split_data<P, T>(file_path: P) -> anyhow::Result<(Vec<T>, Vec<T>, Vec<T>)>
+where
+    P: AsRef<Path>,
+    T: Clone + DeserializeOwned,
+{
     let data = load_json(file_path).context("load file")?;
 
     let train_portion = (data.len() as f32 * 0.85) as usize;
