@@ -21,9 +21,7 @@ impl<B: Backend> FeedForward<B> {
         x
     }
 
-    pub fn new(c: &Config) -> Self {
-        let device = &B::Device::default();
-
+    pub fn new(c: &Config, device:&B::Device) -> Self {
         let linear1 = LinearConfig::new(c.emb_dim, 4 * c.emb_dim).init(device);
         let gelu = Gelu;
         let linear2 = LinearConfig::new(4 * c.emb_dim, c.emb_dim).init(device);

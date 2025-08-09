@@ -56,23 +56,22 @@ impl<B: Backend> MultiHeadAttention<B> {
         context_vec
     }
 
-    pub fn new(d_in: usize, d_out: usize, context_length: usize, dropout: f64, nheads: usize, qkv_bias: bool) -> Self {
+    pub fn new(d_in: usize, d_out: usize, context_length: usize, dropout: f64, nheads: usize, qkv_bias: bool, device: &B::Device) -> Self {
         assert_eq!(0, d_out % nheads, "d_out must be divisible by num_heads");
 
         let head_dim = d_out / nheads;
 
         let c = LinearConfig::new(d_in, d_out).with_bias(qkv_bias);
-        let device = B::Device::default();
 
-        let q = c.init(&device);
-        let k = c.init(&device);
-        let v = c.init(&device);
+        let q = c.init(device);
+        let k = c.init(device);
+        let v = c.init(device);
 
-        let out_proj = LinearConfig::new(d_out, d_out).init(&device);
+        let out_proj = LinearConfig::new(d_out, d_out).init(device);
 
         let dropout = Dropout { prob: dropout };
 
-        let mask = Tensor::<B, 2>::ones([context_length, context_length], &device)
+        let mask = Tensor::<B, 2>::ones([context_length, context_length], device)
             .triu(1)
             .unsqueeze::<4>();
 

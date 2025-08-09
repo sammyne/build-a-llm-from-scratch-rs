@@ -15,7 +15,7 @@ type Device = <LibTorch as Backend>::Device;
 
 /// 需要先进去 gpt2 运行 uv run main.py 准备好数据。
 fn main() -> anyhow::Result<()> {
-    let device = &Device::Cpu;
+    let device = &Device::Cuda(0);
 
     let data_dir = &Path::new("gpt2/gpt2/355M");
     let (settings, params) = {
@@ -36,7 +36,7 @@ fn main() -> anyhow::Result<()> {
     let input_text = utils::format_input(&val_data[0]);
     println!("Input text: {input_text}");
 
-    let idx = tokenizer.tokenize(&input_text);
+    let idx = tokenizer.tokenize(&input_text).to_device(device);
     let token_ids = chapter05::utils::generate(
         &model,
         idx,

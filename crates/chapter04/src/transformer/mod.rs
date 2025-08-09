@@ -36,7 +36,7 @@ impl<B: Backend> TransformerBlock<B> {
         x
     }
 
-    pub fn new(c: &Config) -> Self {
+    pub fn new(c: &Config, device: &B::Device) -> Self {
         let attn = MultiHeadAttention::new(
             c.emb_dim,
             c.emb_dim,
@@ -44,10 +44,11 @@ impl<B: Backend> TransformerBlock<B> {
             c.drop_rate,
             c.nheads,
             c.qkv_bias,
+            device,
         );
-        let ff = FeedForward::new(c);
-        let norm1 = LayerNorm::new(c.emb_dim);
-        let norm2 = LayerNorm::new(c.emb_dim);
+        let ff = FeedForward::new(c, device);
+        let norm1 = LayerNorm::new(c.emb_dim, device);
+        let norm2 = LayerNorm::new(c.emb_dim, device);
         let drop_shortcut = Dropout { prob: c.drop_rate };
 
         Self {

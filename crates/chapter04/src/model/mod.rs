@@ -45,9 +45,9 @@ impl<B: Backend> GptModel<B> {
         let pos_emb = EmbeddingConfig::new(c.context_length, c.emb_dim).init(device);
         let drop_emb = Dropout { prob: c.drop_rate };
 
-        let trf_blocks: Vec<_> = (0..c.nlayers).map(|_| TransformerBlock::new(c)).collect();
+        let trf_blocks: Vec<_> = (0..c.nlayers).map(|_| TransformerBlock::new(c, device)).collect();
 
-        let final_norm = LayerNorm::new(c.emb_dim);
+        let final_norm = LayerNorm::new(c.emb_dim,  device);
         let out_head = LinearConfig::new(c.emb_dim, c.vocab_size).with_bias(false).init(device);
 
         Self {
