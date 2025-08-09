@@ -85,7 +85,7 @@ fn main() -> anyhow::Result<()> {
     // 保存模型用于后续教程
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
 
-    const MODEL_PATH: &str = "gpt_355m_model";
+    const MODEL_PATH: &str = "gpt-355m-model-sft";
     model.save_file(MODEL_PATH, &recorder).expect("save model");
 
     Ok(())

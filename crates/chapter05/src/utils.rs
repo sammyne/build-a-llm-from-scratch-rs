@@ -68,6 +68,7 @@ pub fn cross_entropy<B: Backend, const D: usize, const D2: usize>(
         .forward(logits, target_indices)
 }
 
+/// TODO: 将 eos_id 的类型调整为 Option<u32>
 pub fn generate<B: Backend<IntElem = i64>>(
     model: &GptModel<B>,
     mut idx: Tensor<B, 2, Int>,
