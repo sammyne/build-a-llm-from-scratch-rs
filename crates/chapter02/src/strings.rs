@@ -9,23 +9,27 @@ pub fn concat(a: String, token: &str) -> String {
     if P.contains(token) { a + token } else { a + " " + token }
 }
 
-pub fn split(text: &str) -> Vec<&str> {
-    let re = Regex::new(r#"([,.:;?_!"()'\\]|--|\s)"#).unwrap();
-    let mut result = Vec::new();
-    let mut last = 0;
+pub fn split(s: &str, p: Option<Regex>) -> Vec<&str> {
+    let r = match p {
+        None => Regex::new(r#"([,.:;?_!"()'\\]|--|\s)"#).expect("build default regex"),
+        Some(r) => r,
+    };
 
-    for cap in re.captures_iter(text) {
-        let m = cap.get(0).unwrap();
-        if m.start() > last {
-            result.push(&text[last..m.start()]);
+    let mut out = vec![];
+    let mut last = 0;
+    for m in r.find_iter(s) {
+        // 添加非分隔符部分
+        if m.start() >= last {
+            out.push(&s[last..m.start()]);
         }
-        result.push(m.as_str());
+        // 添加分隔符本身
+        out.push(m.as_str());
         last = m.end();
     }
-
-    if last < text.len() {
-        result.push(&text[last..]);
+    // 添加剩余部分
+    if last < s.len() {
+        out.push(&s[last..]);
     }
 
-    result
+    out
 }
