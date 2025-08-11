@@ -10,20 +10,23 @@ fn main() -> anyhow::Result<()> {
     let enc_text = tokenizer.encode(&raw_text, &Default::default());
     println!("{}", enc_text.len());
 
-    let enc_sample = enc_text[50..].to_vec();
+    let enc_sample = &enc_text[50..];
 
     const CONTEXT_SIZE: usize = 4;
     let x = &enc_sample[0..CONTEXT_SIZE];
     let y = &enc_sample[1..CONTEXT_SIZE + 1];
+    println!();
     println!("x: {x:?}");
     println!("y:      {y:?}");
 
+    println!();
     for i in 1..CONTEXT_SIZE + 1 {
         let context = &enc_sample[..i];
         let desired = enc_sample[i];
         println!("{context:?} ----> {desired}");
     }
 
+    println!();
     for i in 1..CONTEXT_SIZE + 1 {
         let context = &enc_sample[..i];
         let desired = enc_sample[i];

@@ -2,12 +2,12 @@ use std::collections::HashMap;
 
 use crate::strings;
 
-pub struct TokenizerV1 {
+pub struct SimpleTokenizerV1 {
     ids: HashMap<String, usize>,
     strs: HashMap<usize, String>,
 }
 
-impl TokenizerV1 {
+impl SimpleTokenizerV1 {
     pub fn decode(&self, ids: &[usize]) -> String {
         ids.iter().map(|i| &self.strs[i]).fold(String::new(), |acc, s| {
             if acc.is_empty() {
@@ -19,7 +19,7 @@ impl TokenizerV1 {
     }
 
     pub fn encode(&self, text: &str) -> Vec<usize> {
-        strings::split(text)
+        strings::split(text, None)
             .into_iter()
             .filter(|v| !v.trim().is_empty())
             .map(|v| self.ids[v])

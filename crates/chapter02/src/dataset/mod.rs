@@ -85,11 +85,21 @@ impl<B: Backend> GptDatasetV1<B> {
             b = b.shuffle(seed);
         }
 
-        let dataset = Self::new(text, tokenizer, opts.max_length, opts.stride).context("new dataset")?;
+        let mut dataset = Self::new(text, tokenizer, opts.max_length, opts.stride).context("new dataset")?;
+        if opts.drop_last {
+            dataset = dataset.drop_last(opts.batch_size);
+        }
 
         let out = b.build(dataset);
 
         Ok(out)
+    }
+
+    fn drop_last(mut self, batch_size: usize) -> Self {
+        let n = self.input_ids.len() / batch_size * batch_size;
+        self.input_ids.truncate(n);
+        self.target_ids.truncate(n);
+        self
     }
 }
 
@@ -116,6 +126,14 @@ impl Default for LoaderV1Options {
             num_workers: 0,
         }
     }
+}
+
+pub fn create_dataloader_v1<B: Backend, T: Tokenizer>(
+    text: &str,
+    tokenizer: &T,
+    opts: LoaderV1Options,
+) -> anyhow::Result<Arc<dyn DataLoader<B, Batch<B>>>> {
+    GptDatasetV1::new_loader_v1(text, tokenizer, opts)
 }
 
 fn load<B: Backend>(path: &str, device: &B::Device) -> anyhow::Result<Vec<Tensor<B, 1, Int>>> {

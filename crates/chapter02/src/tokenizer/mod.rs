@@ -2,8 +2,8 @@ mod v1;
 mod v2;
 
 use tiktoken::ext::Encoding;
-pub use v1::TokenizerV1;
-pub use v2::TokenizerV2;
+pub use v1::SimpleTokenizerV1;
+pub use v2::SimpleTokenizerV2;
 
 pub const TOKEN_ENDOFTEXT: &str = "<|endoftext|>";
 pub const TOKEN_UNKNOWN: &str = "<|unk|>";

@@ -4,6 +4,7 @@ use anyhow::Context;
 use chapter02::tokenizer::TOKEN_ENDOFTEXT;
 use tiktoken::ext::Encoding;
 
+/// 2.5. BytePair encoding
 fn main() -> anyhow::Result<()> {
     let tokenizer = Encoding::gpt2();
 
@@ -15,9 +16,11 @@ fn main() -> anyhow::Result<()> {
     let expect = vec![
         15496, 11, 466, 345, 588, 8887, 30, 220, 50256, 554, 262, 4252, 18250, 8812, 2114, 286, 617, 34680, 27271, 13,
     ];
+    println!("{ids:?}");
     assert_eq!(expect, ids, "unexpected ids");
 
     let decoded = tokenizer.decode_str(&ids).context("decode")?;
+    println!("{decoded}");
     let expect = "Hello, do you like tea? <|endoftext|> In the sunlit terraces of someunknownPlace.";
     assert_eq!(expect, decoded, "unexpected decoded");
 
