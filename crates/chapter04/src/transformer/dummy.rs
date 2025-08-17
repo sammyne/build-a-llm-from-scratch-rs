@@ -4,7 +4,7 @@ use burn::module::Module;
 use burn::prelude::Backend;
 use burn::tensor::Tensor;
 
-#[derive(Debug, Module)]
+#[derive(Debug, Default, Module)]
 pub struct DummyTransformerBlock<B: Backend> {
     _p: PhantomData<B>,
 }

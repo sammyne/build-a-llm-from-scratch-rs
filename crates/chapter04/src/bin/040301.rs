@@ -57,18 +57,18 @@ fn main() -> anyhow::Result<()> {
         .draw_series(LineSeries::new(x.iter().cloned().zip(y_gelu), BLUE.stroke_width(2)))
         .context("draw x-gelu(x) series")?
         .label("y = gelu(x)")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], BLUE));
 
     chart
         .draw_series(LineSeries::new(x.iter().cloned().zip(y_relu), RED.stroke_width(2)))
         .context("draw x-relu(x) series")?
         .label("y = relu(x)")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], RED));
 
     chart
         .configure_series_labels()
-        .background_style(&WHITE.mix(0.8))
-        .border_style(&BLACK)
+        .background_style(WHITE.mix(0.8))
+        .border_style(BLACK)
         .draw()
         .context("draw series labels")?;
 

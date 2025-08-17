@@ -23,7 +23,7 @@ fn main() -> anyhow::Result<()> {
         tokenizer.encode(start_context, &allowed_specials)
     };
 
-    let encoded_tensor = Tensor::<B, 1, Int>::from_ints(encoded.as_slice(), &device).unsqueeze::<2>();
+    let encoded_tensor = Tensor::<B, 1, Int>::from_ints(encoded.as_slice(), device).unsqueeze::<2>();
 
     let model = GPT_124M.init::<B>(device);
 

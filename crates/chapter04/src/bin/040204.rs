@@ -11,7 +11,7 @@ fn main() -> anyhow::Result<()> {
 
     B::seed(123);
 
-    let batch_example = Tensor::<B, 2>::random([2, 5], Distribution::Uniform(0.0, 1.0), &device);
+    let batch_example = Tensor::<B, 2>::random([2, 5], Distribution::Uniform(0.0, 1.0), device);
 
     let ln = LayerNormConfig::new(5).init(device);
     let out_ln = ln.forward(batch_example.clone());
