@@ -1,12 +1,12 @@
 use burn::backend::{Autodiff, NdArray};
 use burn::prelude::Backend;
 use burn::tensor::Tensor;
-use chapter03::attention::MultiHeadAttention;
+use chapter03::attention::MultiHeadAttentionConfig;
 
 type B = Autodiff<NdArray<f32>>;
 
 fn main() {
-    let device = <B as burn::prelude::Backend>::Device::default();
+    let device = &<B as Backend>::Device::default();
 
     B::seed(123);
 
@@ -17,20 +17,19 @@ fn main() {
             [0.57, 0.85, 0.64], // starts (x^3)
             [0.22, 0.58, 0.33], // with (x^4)
             [0.77, 0.25, 0.10], // one (x^5)
-            [0.05, 0.80, 0.55],
-        ], // step (x^6)
-        &device,
+            [0.05, 0.80, 0.55], // step (x^6)
+        ],
+        device,
     );
 
     let d_in = inputs.dims()[1];
     let d_out = 2;
 
     let batch = Tensor::stack::<3>(vec![inputs.clone(), inputs.clone()], 0);
-    println!("batch.shape: {:?}", batch.shape());
 
     let context_length = batch.shape().dims[1];
-    let mha = MultiHeadAttention::new(d_in, d_out, context_length, 0.0, 2, false);
+    let mha = MultiHeadAttentionConfig::new(d_in, d_out, context_length, 0.0, 2).init(device);
     let context_vecs = mha.forward(batch);
-    println!("context_vecs:\n{context_vecs:?}\n");
-    println!("context_vecs.shape: {:?}\n", context_vecs.shape());
+    println!("{context_vecs}");
+    println!("\ncontext_vecs.shape: {:?}\n", context_vecs.shape());
 }

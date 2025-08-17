@@ -116,15 +116,15 @@ pub fn load_weights_into_gpt2<B: Backend>(params: Params, model: &mut GptModel<B
     );
     for (dst, src) in model.trf_blocks.iter_mut().zip(params.blocks.iter()) {
         let (q_w, k_w, v_w) = tripple_split_2d(&src.attn.c_attn.w, device)?;
-        checked_assign_param(&mut dst.attn.q.weight, q_w).context("load attention query weights")?;
-        checked_assign_param(&mut dst.attn.k.weight, k_w).context("load attention key weights")?;
-        checked_assign_param(&mut dst.attn.v.weight, v_w).context("load attention value weights")?;
+        checked_assign_param(&mut dst.attn.wq.weight, q_w).context("load attention query weights")?;
+        checked_assign_param(&mut dst.attn.wk.weight, k_w).context("load attention key weights")?;
+        checked_assign_param(&mut dst.attn.wv.weight, v_w).context("load attention value weights")?;
 
         let (q_b, k_b, v_b) = tripple_split_1d(&src.attn.c_attn.b, device)?;
-        checked_assign_param(dst.attn.q.bias.as_mut().expect("miss q-bias"), q_b)
+        checked_assign_param(dst.attn.wq.bias.as_mut().expect("miss q-bias"), q_b)
             .context("load attention query bias")?;
-        checked_assign_param(dst.attn.k.bias.as_mut().expect("miss k-bias"), k_b).context("load attention key bias")?;
-        checked_assign_param(dst.attn.v.bias.as_mut().expect("miss v-bias"), v_b)
+        checked_assign_param(dst.attn.wk.bias.as_mut().expect("miss k-bias"), k_b).context("load attention key bias")?;
+        checked_assign_param(dst.attn.wv.bias.as_mut().expect("miss v-bias"), v_b)
             .context("load attention value bias")?;
 
         // pytorch 的线性层存的是转置，burn 存的是原始值。

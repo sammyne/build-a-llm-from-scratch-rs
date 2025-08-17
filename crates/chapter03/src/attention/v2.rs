@@ -5,24 +5,21 @@ use burn::tensor::{Tensor, activation};
 
 #[derive(Module, Debug)]
 pub struct SelfAttentionV2<B: Backend> {
-    pub q: Linear<B>,
-    pub k: Linear<B>,
-    pub v: Linear<B>,
+    pub wq: Linear<B>,
+    pub wk: Linear<B>,
+    pub wv: Linear<B>,
 }
 
 impl<B: Backend> SelfAttentionV2<B> {
     pub fn forward(&self, x: Tensor<B, 2>) -> Tensor<B, 2> {
-        // let keys = x.clone().matmul(self.k.forward(x));
-        // let queries = x.clone().matmul(self.q.forward(x));
-        // let values = x.clone().matmul(self.v.forward(x));
+        let keys = self.wk.clone().forward(x.clone());
+        let queries = self.wq.clone().forward(x.clone());
+        let values = self.wv.clone().forward(x.clone());
 
-        let keys = self.k.clone().forward(x.clone());
-        let queries = self.q.clone().forward(x.clone());
-        let values = self.v.clone().forward(x.clone());
-
-        let dk = *keys.dims().last().expect("get k's last dim") as f32;
+        let dk = keys.dims()[1] as f32;
 
         let attn_scores = queries.matmul(keys.transpose());
+
         let dim = attn_scores.dims().len() - 1;
         let attn_weights = activation::softmax(attn_scores / dk.sqrt(), dim);
 
@@ -35,12 +32,10 @@ impl<B: Backend> SelfAttentionV2<B> {
         let c = LinearConfig::new(d_in, d_out).with_bias(qkv_bias);
         let device = B::Device::default();
 
-        let q = c.init(&device);
-        let k = c.init(&device);
-        let v = c.init(&device);
+        let wq = c.init(&device);
+        let wk = c.init(&device);
+        let wv = c.init(&device);
 
-        println!("q: {:?}\n, k: {:?}\n, v: {:?}", q, k, v);
-
-        Self { q, k, v }
+        Self { wq, wk, wv }
     }
 }
