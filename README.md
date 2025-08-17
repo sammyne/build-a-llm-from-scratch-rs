@@ -10,6 +10,14 @@ PyTorch 代码。
 
 ## 快速开始
 
+每章的代码实现组织在 `crates/chapter{章节序号}` 描述的 rust crate 下（例如，第 2 章的代码在 `crates/chapter02` crate）。
+
+每章的 crate 参照原书的组织风格，将 PyTorch 的代码片段组织为独立的可执行文件，并使用以下命名格式之一
+- `030601`：表示第 3 章第 6 小节第 1 子节**仅有**的代码片段；
+- `03060202`：表示第 3 章第 6 小节第 2 子节的第 2 个代码片段；
+
+> 目前代码的组织结构还在调整中，并不是每章都满足这个说明。已调整完毕有第 2、3、5、6、7 章。
+
 ## 进度
 - [x] 01. 理解大型语言模型（Understanding Large Language Models）
 - [x] 02. 处理文本数据（Working with Text Data）​
@@ -36,6 +44,9 @@ PyTorch 代码。
   ```
   !export LD_LIBRARY_PATH=/usr/local/lib/python3.11/dist-packages/torch/lib/:$LD_LIBRARY_PATH
   ```
+- 可以白嫖 GPU 资源的地方
+  - [Google Colab](https://colab.research.google.com/)
+  - https://www.kaggle.com/：如果选用 GPU T4 的话，可以用两块 GPU T4 
 
 ## 参考文献
 - https://github.com/rasbt/LLMs-from-scratch
