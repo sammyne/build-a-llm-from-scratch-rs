@@ -5,7 +5,7 @@ use burn::backend::{Autodiff, NdArray};
 use burn::module::AutodiffModule;
 use burn::prelude::*;
 use burn::tensor::{DType, Tensor};
-use chapter04::{GPT_124M, GptModel, utils};
+use chapter04::{GPT_124M, utils};
 use tiktoken::ext::Encoding;
 
 type B = Autodiff<NdArray<f32>>;
@@ -22,16 +22,14 @@ fn main() -> anyhow::Result<()> {
         let allowed_specials = HashSet::default();
         tokenizer.encode(start_context, &allowed_specials)
     };
-    println!("encoded: {encoded:?}");
 
     let encoded_tensor = Tensor::<B, 1, Int>::from_ints(encoded.as_slice(), &device).unsqueeze::<2>();
-    println!("encoded-tensor.shape: {:?}", encoded_tensor.shape());
 
-    let model = GptModel::<B>::new(&GPT_124M, device);
+    let model = GPT_124M.init::<B>(device);
 
     let infer = model.valid();
 
-    let out = utils::generate_text_simple(&infer, encoded_tensor.inner(), 6, GPT_124M.context_length);
+    let out = utils::generate_text_simple(&infer, encoded_tensor.valid(), 6, GPT_124M.context_length);
     println!("Output: {out}");
     println!("Output length: {:?}", out.dims()[1]);
 
@@ -40,9 +38,9 @@ fn main() -> anyhow::Result<()> {
         .to_data()
         .convert_dtype(DType::U32)
         .into_vec()
-        .map_err(|err| anyhow::anyhow!("conv out indices: {err:?}"))?;
+        .map_err(|err| anyhow::anyhow!("convert out indices: {err:?}"))?;
     let decoded_text = tokenizer.decode_str(&indices).context("decode output indices")?;
-    println!("Decoded text: {decoded_text}");
+    println!("\nDecoded text: {decoded_text}");
 
     Ok(())
 }

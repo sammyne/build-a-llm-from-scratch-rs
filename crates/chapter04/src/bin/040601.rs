@@ -3,42 +3,25 @@ use std::collections::HashSet;
 use burn::backend::{Autodiff, NdArray};
 use burn::prelude::*;
 use burn::tensor::Tensor;
-use chapter04::{GPT_124M, GptModel};
+use chapter04::GPT_124M;
 use tiktoken::ext::Encoding;
 
 type B = Autodiff<NdArray<f32>>;
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     B::seed(123);
 
     let device = &<B as Backend>::Device::default();
 
     let batch = new_batch(device);
 
-    let model = GptModel::<B>::new(&GPT_124M, device);
+    let model = GPT_124M.init(device);
 
     let out = model.forward(batch.clone());
 
-    println!("Input batch:\n{batch:?}");
+    println!("Input batch:\n{batch}");
     println!("\nOutput shape: {:?}", out.shape());
     println!("{out}");
-
-    // TODO: 排查和 Pytorch 不一致的原因
-    let total_params = model.num_params();
-
-    println!("Total number of parameters: {}", total_params);
-    println!("Token embedding layer shape: {:?}", model.tok_emb.weight.shape());
-    println!("Output layer shape: {:?}", model.out_head.weight.shape());
-    println!(
-        "Number of trainable parameters considering weight tying: {}",
-        model.num_params() - model.out_head.num_params()
-    );
-
-    let total_size_bytes = total_params * 4;
-    let total_size_mb = total_size_bytes as f32 / 1024.0 / 1024.0;
-    println!("Total size of the model: {total_size_mb:.2} MB");
-
-    Ok(())
 }
 
 fn new_batch(device: &<B as Backend>::Device) -> Tensor<B, 2, Int> {
