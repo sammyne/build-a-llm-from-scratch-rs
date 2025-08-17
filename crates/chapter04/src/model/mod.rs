@@ -6,7 +6,7 @@ use burn::prelude::*;
 use burn::tensor::Tensor;
 pub use dummy::*;
 
-use crate::{Config, LayerNorm, TransformerBlock};
+use crate::{Config, LayerNorm, LayerNormConfig, TransformerBlock, TransformerBlockConfig};
 
 #[derive(Debug, Module)]
 pub struct GptModel<B: Backend> {
@@ -39,18 +39,25 @@ impl<B: Backend> GptModel<B> {
 
         logits
     }
+}
 
-    pub fn new(c: &Config, device: &B::Device) -> Self {
+impl Config {
+    pub fn init<B: Backend>(&self, device: &B::Device) -> GptModel<B> {
+        let c = self;
+
         let tok_emb = EmbeddingConfig::new(c.vocab_size, c.emb_dim).init(device);
         let pos_emb = EmbeddingConfig::new(c.context_length, c.emb_dim).init(device);
         let drop_emb = Dropout { prob: c.drop_rate };
 
-        let trf_blocks: Vec<_> = (0..c.nlayers).map(|_| TransformerBlock::new(c, device)).collect();
+        let trf_blocks: Vec<_> = {
+            let cc = TransformerBlockConfig::new(c.context_length, c.emb_dim, c.nheads, c.drop_rate, c.qkv_bias);
+            (0..c.nlayers).map(|_| cc.init(device)).collect()
+        };
 
-        let final_norm = LayerNorm::new(c.emb_dim,  device);
+        let final_norm = LayerNormConfig::new(c.emb_dim).init(device);
         let out_head = LinearConfig::new(c.emb_dim, c.vocab_size).with_bias(false).init(device);
 
-        Self {
+        GptModel {
             tok_emb,
             pos_emb,
             drop_emb,

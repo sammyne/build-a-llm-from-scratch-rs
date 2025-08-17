@@ -18,6 +18,7 @@ pub fn generate_text_simple<B: Backend>(
 
         let dim = logits.dims().len() - 1;
 
+        // softmax 是多余的。添加只是为了将输出转化为直观的概率。
         let probas = activation::softmax(logits, dim);
         let idx_next = probas.argmax(dim);
         idx = Tensor::cat(vec![idx, idx_next], 1);

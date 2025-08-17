@@ -15,14 +15,13 @@ fn main() -> anyhow::Result<()> {
     let sample_input = Tensor::<B, 2>::from_floats([[1.0, 0.0, -1.0]], &device).unsqueeze::<3>();
 
     B::seed(123);
-
     println!("model without shortcut");
-    let model_without_shortcut = ExampleDeepNeuralNetwork::<B>::new(&layer_sizes, false);
+    let model_without_shortcut = ExampleDeepNeuralNetwork::<B>::new(layer_sizes, false);
     print_gradients(model_without_shortcut, sample_input.clone());
 
     B::seed(123);
     println!("\nmodel with shortcut");
-    let model_with_shortcut = ExampleDeepNeuralNetwork::<B>::new(&layer_sizes, true);
+    let model_with_shortcut = ExampleDeepNeuralNetwork::<B>::new(layer_sizes, true);
     print_gradients(model_with_shortcut, sample_input.clone());
 
     Ok(())
@@ -51,7 +50,7 @@ impl<B: Backend> ExampleDeepNeuralNetwork<B> {
         x
     }
 
-    pub fn new(layer_sizes: &[usize], use_shortcut: bool) -> Self {
+    pub fn new(layer_sizes: [usize; 6], use_shortcut: bool) -> Self {
         let device = B::Device::default();
 
         let layers = vec![

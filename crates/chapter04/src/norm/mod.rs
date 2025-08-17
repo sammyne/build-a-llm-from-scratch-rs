@@ -1,5 +1,6 @@
 mod dummy;
 
+use burn::config::Config;
 use burn::module::{Module, Param};
 use burn::prelude::Backend;
 use burn::tensor::Tensor;
@@ -12,6 +13,13 @@ pub struct LayerNorm<B: Backend> {
     pub shift: Param<Tensor<B, 1>>,
 }
 
+#[derive(Config, Copy, Debug)]
+pub struct LayerNormConfig {
+    pub embed_dim: usize,
+    #[config(default = 1e-5)]
+    pub eps: f64,
+}
+
 impl<B: Backend> LayerNorm<B> {
     pub fn forward<const D: usize>(&self, x: Tensor<B, D>) -> Tensor<B, D> {
         let dim = x.dims().len() - 1;
@@ -21,13 +29,17 @@ impl<B: Backend> LayerNorm<B> {
 
         self.scale.val().unsqueeze() * norm_x + self.shift.val().unsqueeze()
     }
+}
 
-    pub fn new(embed_dim: usize, device: &B::Device) -> Self {
-        let eps = 1e-5;
+impl LayerNormConfig {
+    pub fn init<B: Backend>(&self, device: &B::Device) -> LayerNorm<B> {
+        let scale = Param::from_tensor(Tensor::<B, 1>::ones([self.embed_dim], device));
+        let shift = Param::from_tensor(Tensor::<B, 1>::zeros([self.embed_dim], device));
 
-        let scale = Param::from_tensor(Tensor::<B, 1>::ones([embed_dim], device));
-        let shift = Param::from_tensor(Tensor::<B, 1>::zeros([embed_dim], device));
-
-        Self { eps, scale, shift }
+        LayerNorm {
+            eps: self.eps,
+            scale,
+            shift,
+        }
     }
 }

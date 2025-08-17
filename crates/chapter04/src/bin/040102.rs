@@ -9,7 +9,7 @@ use tiktoken::ext::Encoding;
 type B = Autodiff<NdArray<f32>>;
 
 fn main() -> anyhow::Result<()> {
-    let device = <B as burn::prelude::Backend>::Device::default();
+    let device = <B as Backend>::Device::default();
 
     let tokenizer = Encoding::gpt2();
 
@@ -25,14 +25,13 @@ fn main() -> anyhow::Result<()> {
     }
 
     let batch = Tensor::stack::<2>(batch, 0);
-    println!("{batch:?}");
 
     B::seed(123);
 
     let model = DummyGptModel::<B>::new(&GPT_124M, &device);
     let logits = model.forward(batch);
     println!("Output shape: {:?}", logits.shape());
-    println!("logits: {logits:?}");
+    println!("logits: {logits}");
 
     Ok(())
 }
