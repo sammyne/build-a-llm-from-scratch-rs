@@ -23,13 +23,5 @@ fn main() {
     );
 
     let b = a.clone().matmul(a.clone().transpose());
-    println!("{b:?}");
-
-    let first_head = a.clone().slice([0..1, 0..1]).squeeze::<3>(0).squeeze::<2>(0);
-    let first_res = first_head.clone().matmul(first_head.transpose());
-    println!("\n{first_res:?}\n");
-
-    let second_head = a.clone().slice([0..1, 1..2]).squeeze::<3>(0).squeeze::<2>(0);
-    let second_res = second_head.clone().matmul(second_head.transpose());
-    println!("\n{second_res:?}\n");
+    println!("{b}");
 }

@@ -1,21 +1,22 @@
-use burn::module::Module;
+use burn::module::{Module, Param};
 use burn::prelude::Backend;
 use burn::tensor::{Distribution, Tensor, activation};
 
+/// Listing 3.1 A compact self-attention class
 #[derive(Module, Debug)]
 pub struct SelfAttentionV1<B: Backend> {
-    q: Tensor<B, 2>,
-    k: Tensor<B, 2>,
-    v: Tensor<B, 2>,
+    wq: Param<Tensor<B, 2>>,
+    wk: Param<Tensor<B, 2>>,
+    wv: Param<Tensor<B, 2>>,
 }
 
 impl<B: Backend> SelfAttentionV1<B> {
     pub fn forward(&self, x: Tensor<B, 2>) -> Tensor<B, 2> {
-        let keys = x.clone().matmul(self.k.clone());
-        let queries = x.clone().matmul(self.q.clone());
-        let values = x.clone().matmul(self.v.clone());
+        let keys = x.clone().matmul(self.wk.clone().into_value());
+        let queries = x.clone().matmul(self.wq.clone().into_value());
+        let values = x.clone().matmul(self.wv.clone().into_value());
 
-        let dk = *keys.dims().last().expect("get k's last dim") as f32;
+        let dk = keys.dims()[1] as f32;
 
         let attn_scores = queries.matmul(keys.transpose());
         let dim = attn_scores.dims().len() - 1;
@@ -29,10 +30,14 @@ impl<B: Backend> SelfAttentionV1<B> {
     pub fn new(d_in: usize, d_out: usize) -> Self {
         let device = B::Device::default();
         let distribution = Distribution::Uniform(0.0, 1.0);
-        let q = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
-        let k = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
-        let v = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
+        let wq = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
+        let wk = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
+        let wv = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
 
-        Self { q, k, v }
+        Self {
+            wq: Param::from_tensor(wq),
+            wk: Param::from_tensor(wk),
+            wv: Param::from_tensor(wv),
+        }
     }
 }
