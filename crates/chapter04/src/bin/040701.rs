@@ -23,6 +23,6 @@ fn main() {
     assert_eq!(&expected, encoded.as_slice(), "unexpected encoded start-context");
     println!("encoded: {encoded:?}");
 
-    let encoded_tensor = Tensor::<B, 1, Int>::from_ints(encoded.as_slice(), &device).unsqueeze::<2>();
+    let encoded_tensor = Tensor::<B, 1, Int>::from_ints(encoded.as_slice(), device).unsqueeze::<2>();
     println!("encoded-tensor.shape: {:?}", encoded_tensor.shape());
 }

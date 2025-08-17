@@ -30,9 +30,9 @@ impl<B: Backend> SelfAttentionV1<B> {
     pub fn new(d_in: usize, d_out: usize) -> Self {
         let device = B::Device::default();
         let distribution = Distribution::Uniform(0.0, 1.0);
-        let wq = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
-        let wk = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
-        let wv = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
+        let wq = Tensor::<B, 2>::random([d_in, d_out], distribution, &device);
+        let wk = Tensor::<B, 2>::random([d_in, d_out], distribution, &device);
+        let wv = Tensor::<B, 2>::random([d_in, d_out], distribution, &device);
 
         Self {
             wq: Param::from_tensor(wq),

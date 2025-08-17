@@ -34,7 +34,7 @@ fn new_batch(device: &<B as Backend>::Device) -> Tensor<B, 2, Int> {
     let allowed_specials = HashSet::new();
     for v in [TXT1, TXT2] {
         let ids = tokenizer.encode(v, &allowed_specials);
-        let t = Tensor::<B, 1, Int>::from_ints(ids.as_slice(), &device);
+        let t = Tensor::<B, 1, Int>::from_ints(ids.as_slice(), device);
         batch.push(t);
     }
 

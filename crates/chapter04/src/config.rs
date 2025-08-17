@@ -19,4 +19,4 @@ pub struct Config {
     pub qkv_bias: bool,
 }
 
-pub static GPT_124M: LazyLock<Config> = LazyLock::new(|| Config::new());
+pub static GPT_124M: LazyLock<Config> = LazyLock::new(Config::new);
