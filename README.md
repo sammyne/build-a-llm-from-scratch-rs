@@ -7,7 +7,7 @@ PyTorch 代码。
 两种开发模式
 1. Debian 12
 2. 用 docker/Dockerfile 描述的 docker 容器编译好程序，传到 Google Colab 运行
-  - 使用这种模式时，注意安装温馨提示更新 `LD_LIBRARY_PATH` 等环境变量
+    - 使用这种模式时，注意安装温馨提示更新 `LD_LIBRARY_PATH` 等环境变量
 
 ## 快速开始
 
