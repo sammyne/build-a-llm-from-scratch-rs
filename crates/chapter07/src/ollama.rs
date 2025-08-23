@@ -1,5 +1,6 @@
 use anyhow::Context as _;
-use reqwest::{Url, blocking::Client};
+use reqwest::Url;
+use reqwest::blocking::Client;
 use serde::Deserialize;
 
 /// Listing 7.10 Querying a local Ollama model

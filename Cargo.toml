@@ -6,6 +6,7 @@ resolver = "3"
 [workspace.dependencies]
 anyhow = "1"
 burn = "0.18"
+plotters = "0.3"
 regex = "1"
 reqwest = "0.12"
 serde = "1.0"

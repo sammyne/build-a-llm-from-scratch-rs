@@ -19,6 +19,7 @@ pub fn calc_loss_batch<B: Backend>(
     utils::cross_entropy(logits, target_batch)
 }
 
+/// Listing 5.2 Function to compute the training and validation loss
 pub fn calc_loss_loader<B: Backend<FloatElem = f32>>(
     data_loader: &dyn DataLoader<B, Batch<B>>,
     model: &GptModel<B>,

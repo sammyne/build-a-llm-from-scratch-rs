@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::usize;
 
 use anyhow::Context;
@@ -8,17 +9,17 @@ use burn::data::dataloader::DataLoader;
 use burn::module::AutodiffModule;
 use burn::optim::{AdamWConfig, GradientsParams, Optimizer};
 use burn::prelude::*;
-use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder};
+use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder, Recorder};
 use burn::tensor::backend::AutodiffBackend;
-use chapter02::dataset::{Batch, GptDatasetV1, LoaderV1Options};
+use chapter02::dataset::{self, Batch, LoaderV1Options};
 use chapter02::verdict;
 use chapter04::GptModel;
 use chapter05::config::GPT_124M;
 use chapter05::loss;
 use chapter05::utils::Tokenizer;
+use serde::{Deserialize, Serialize};
 use tiktoken::ext::Encoding;
 
-// type B = Autodiff<NdArray<f32>>;
 type B = Autodiff<LibTorch>;
 // type B = Autodiff<Cuda>;
 
@@ -27,24 +28,14 @@ fn main() -> anyhow::Result<()> {
 
     let text_data = verdict::load().context("load verdict")?;
 
-    let tokens: Tensor<<B as AutodiffBackend>::InnerBackend, 2, Int> = tokenizer.tokenize(&text_data);
-    let total_tokens: usize = tokens.shape().dims.iter().product();
-    println!("Characters: {}", text_data.len());
-    println!("Tokens: {total_tokens}");
-
-    // let model = GptModel::<B>::new(GPT_124M).no_grad();
-
     const TRAIN_RATIO: f64 = 0.9;
     let (train_data, val_data) = {
         let i = (text_data.len() as f64 * TRAIN_RATIO) as usize;
-        println!("{i}");
         text_data.split_at(i)
     };
-    println!("hash(train): {}", crc32fast::hash(train_data.as_bytes()));
 
     B::seed(123);
-    let device = LibTorchDevice::Cpu;
-    // let device = CudaDevice::default();
+    let device = &LibTorchDevice::Cpu;
 
     let train_loader = {
         let opts = LoaderV1Options {
@@ -55,7 +46,7 @@ fn main() -> anyhow::Result<()> {
             shuffle_seed: Some(123),
             ..Default::default()
         };
-        GptDatasetV1::<B>::new_loader_v1(train_data, &tokenizer, opts).context("load train data")?
+        dataset::create_dataloader_v1::<B, _>(train_data, &tokenizer, opts).context("load train data")?
     };
 
     let val_loader = {
@@ -66,23 +57,12 @@ fn main() -> anyhow::Result<()> {
             drop_last: false,
             ..Default::default()
         };
-        GptDatasetV1::<B>::new_loader_v1(val_data, &tokenizer, opts).context("load validation data")?
+        dataset::create_dataloader_v1::<B, _>(val_data, &tokenizer, opts).context("load validation data")?
     };
-
-    println!("Train loader:");
-    for (x, y) in train_loader.iter() {
-        // println!("sum(x) = {}", x.clone().sum_dim(1));
-        println!("shape(x,y)=({:?},{:?})", x.shape(), y.shape());
-    }
-    println!("\nValidation loader:");
-    for (x, y) in val_loader.iter() {
-        // println!("sum(x) = {}", x.clone().sum_dim(1));
-        println!("shape(x,y)=({:?},{:?})", x.shape(), y.shape());
-    }
 
     // 警告：Module::to_device 转移后的模型不再支持反向传播。
     // 详情参见 burn 的官方文档：https://docs.rs/burn/0.17.1/burn/module/trait.Module.html#tymethod.to_device
-    let model = GptModel::<B>::new(GPT_124M, &device);
+    let model = GPT_124M.init(device);
 
     let optimizer = AdamWConfig::new().with_weight_decay(0.1).init::<B, GptModel<B>>();
 
@@ -100,8 +80,17 @@ fn main() -> anyhow::Result<()> {
         lr: 0.0004,
     };
 
-    //let (train_losses, val_losses, track_tokens_seen) = train_model_simple(opts);
-    let _ = train_model_simple(opts);
+    let (model, optimizer, ..) = train_model_simple(opts);
+
+    const MODEL_PATH: &str = "gpt_124m_trained.burn";
+    let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
+    model.save_file(MODEL_PATH, &recorder).expect("save model");
+
+    const OPTIMIZER_PATH: &str = "gpt_124m_optimizer";
+    let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
+    recorder
+        .record(optimizer.to_record(), PathBuf::from(OPTIMIZER_PATH))
+        .context("record optimizer")?;
 
     Ok(())
 }
@@ -125,6 +114,13 @@ where
     lr: LearningRate,
 }
 
+#[derive(Serialize, Deserialize)]
+struct TrainOveriew {
+    train_losses: Vec<f32>,
+    val_losses: Vec<f32>,
+    track_tokens_seen: Vec<usize>,
+}
+
 struct EvaluateOpts<'a, B: AutodiffBackend> {
     model: GptModel<B>,
     train_loader: &'a dyn DataLoader<B, Batch<B>>,
@@ -137,6 +133,7 @@ fn evaluate_model<B>(opts: EvaluateOpts<'_, B>) -> (f32, f32)
 where
     B: AutodiffBackend<FloatElem = f32>,
 {
+    // TODO: 评估没有显式调用 valid 函数排除 dropout 的影响有多大。
     let model = opts.model.no_grad();
     let train_loss = loss::calc_loss_loader(opts.train_loader, &model, opts.eval_iter.into(), opts.device);
     let val_loss = loss::calc_loss_loader(opts.val_loader, &model, opts.eval_iter.into(), opts.device);
@@ -158,7 +155,7 @@ where
     println!("{}", decoded_text.replace('\n', " "));
 }
 
-fn train_model_simple<B, O, T>(opts: TrainOpts<'_, B, O, T>) -> (Vec<f32>, Vec<f32>, Vec<usize>)
+fn train_model_simple<B, O, T>(opts: TrainOpts<'_, B, O, T>) -> (GptModel<B>, O, TrainOveriew)
 where
     B: AutodiffBackend<FloatElem = f32>,
     O: Optimizer<GptModel<B>, B>,
@@ -191,7 +188,6 @@ where
             let loss = loss::calc_loss_batch(input_batch.clone(), target_batch, &model, device);
 
             let grads = GradientsParams::from_grads(loss.backward(), &model);
-            // TODO: 更新学习率
             model = optimizer.step(lr, model, grads);
 
             token_seen += input_batch.shape().num_elements();
@@ -219,10 +215,11 @@ where
         generate_and_print_sample(model.clone(), tokenizer, device, start_context);
     }
 
-    // 保存模型用于后续教程
-    const MODEL_PATH: &str = "gpt_124m_trained.burn";
-    let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
-    model.save_file(MODEL_PATH, &recorder).expect("save model");
+    let overview = TrainOveriew {
+        train_losses,
+        val_losses,
+        track_tokens_seen,
+    };
 
-    (train_losses, val_losses, track_tokens_seen)
+    (model, optimizer, overview)
 }

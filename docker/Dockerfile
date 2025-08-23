@@ -9,7 +9,7 @@ ENV RUSTUP_DIST_SERVER="https://rsproxy.cn"     \
 
 RUN apt update                                                                    &&\
   apt install -y python3.11                                                       &&\
-  apt install -y curl git pkg-config libssl-dev                                   &&\
+  apt install -y curl git pkg-config libfontconfig-dev libssl-dev                                   &&\
   update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 100  &&\
   apt clean                                                                       &&\
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

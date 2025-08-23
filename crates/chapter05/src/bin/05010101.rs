@@ -2,7 +2,6 @@ use anyhow::Context;
 use burn::backend::{Autodiff, NdArray};
 use burn::module::AutodiffModule;
 use burn::prelude::*;
-use chapter04::GptModel;
 use chapter05::config::GPT_124M;
 use chapter05::utils::Tokenizer;
 use tiktoken::ext::Encoding;
@@ -13,7 +12,7 @@ fn main() -> anyhow::Result<()> {
     B::seed(123);
     let device = &<B as Backend>::Device::Cpu;
 
-    let model = GptModel::<B>::new(GPT_124M, device);
+    let model = GPT_124M.init::<B>(device);
     let model = model.valid();
 
     let start_context = "Hello, I am";
