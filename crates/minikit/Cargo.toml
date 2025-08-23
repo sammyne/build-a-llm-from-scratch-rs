@@ -1,0 +1,8 @@
+[package]
+name = "minikit"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# 注意和 burn 的保持一致
+tch = "0.19"

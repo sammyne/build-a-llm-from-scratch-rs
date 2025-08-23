@@ -35,7 +35,12 @@ fn main() -> anyhow::Result<()> {
     };
 
     B::seed(123);
-    let device = &LibTorchDevice::Cpu;
+    let device = if !minikit::cuda::is_available() {
+        &LibTorchDevice::Cpu
+    } else {
+        println!("using CUDA");
+        &LibTorchDevice::Cuda(0)
+    };
 
     let train_loader = {
         let opts = LoaderV1Options {

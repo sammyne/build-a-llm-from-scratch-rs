@@ -15,6 +15,7 @@ serde_json = "1.0"
 chapter02.path = "crates/chapter02"
 chapter03.path = "crates/chapter03"
 chapter04.path = "crates/chapter04"
+minikit.path = "crates/minikit"
 
 [workspace.dependencies.tiktoken]
 features = ["ext"]
