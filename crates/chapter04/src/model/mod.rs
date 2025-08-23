@@ -1,8 +1,10 @@
 mod dummy;
 
+use anyhow::Context as _;
 use burn::module::Module;
 use burn::nn::{Dropout, Embedding, EmbeddingConfig, Linear, LinearConfig};
 use burn::prelude::*;
+use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder};
 use burn::tensor::Tensor;
 pub use dummy::*;
 
@@ -65,5 +67,13 @@ impl Config {
             final_norm,
             out_head,
         }
+    }
+
+    pub fn load<B: Backend>(&self, path: &str, device: &B::Device) -> anyhow::Result<GptModel<B>> {
+        let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
+
+        self.init(device)
+            .load_file(path, &recorder, device)
+            .context("load model")
     }
 }

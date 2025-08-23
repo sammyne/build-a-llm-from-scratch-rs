@@ -1,6 +1,6 @@
 use burn::backend::NdArray;
 use burn::prelude::Backend;
-use burn::tensor::{Tensor, activation};
+use burn::tensor::Tensor;
 
 type B = NdArray;
 
@@ -15,18 +15,12 @@ fn main() {
 
     const TOP_K: usize = 3;
 
-    let (top_logits, top_pos) = next_token_logits.clone().topk_with_indices(TOP_K, 0);
-    println!("Top logits: {}", top_logits.to_data());
-    println!("Top pos: {}", top_pos.to_data());
+    let top_logits = next_token_logits.clone().topk(TOP_K, 0);
 
     let new_logits = {
         let v = top_logits.min().into_scalar();
         let discarded = next_token_logits.clone().lower(next_token_logits.clone().full_like(v));
         next_token_logits.clone().mask_fill(discarded, f32::NEG_INFINITY)
     };
-    println!("New logits: {}", new_logits.to_data());
-
-    let topk_probas = activation::softmax(new_logits, 0);
-    // TODO(xiangminli): 调研是否能够格式化输出的 f32，保持和书上的一样
-    println!("Topk probas: {}", topk_probas.to_data());
+    println!("New logits: {new_logits}");
 }

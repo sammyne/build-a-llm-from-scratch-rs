@@ -1041,7 +1041,7 @@ dependencies = [
  "burn",
  "chapter02",
  "chapter04",
- "crc32fast",
+ "plotters",
  "rand 0.8.5",
  "serde",
  "serde_json",
@@ -3783,6 +3783,13 @@ name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
+
+[[package]]
+name = "minikit"
+version = "0.1.0"
+dependencies = [
+ "tch",
+]
 
 [[package]]
 name = "minimal-lexical"

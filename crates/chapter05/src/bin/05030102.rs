@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use burn::backend::NdArray;
 use burn::prelude::Backend;
 use burn::tensor::{Tensor, activation};
+use chapter05::rand;
 
 type B = NdArray;
 
@@ -32,9 +33,8 @@ fn main() {
         Tensor::<B, 1>::from_floats([4.51, 0.89, -1.90, 6.75, 1.63, -1.62, -1.89, 6.28, 1.79], device);
 
     let probas = activation::softmax(next_token_logits.clone(), 0);
-    let next_token = probas.argmax(0).into_scalar();
-    println!("Next token: {}", inverse_vocab[&next_token]);
 
-    // B::seed(123);
-    // TODO(xiangminli): 实现 multinomial
+    B::seed(123);
+    let next_token_id = rand::multinomial(probas.unsqueeze::<2>()).squeeze::<1>(0).into_scalar();
+    println!("Next token: {}", inverse_vocab[&next_token_id]);
 }

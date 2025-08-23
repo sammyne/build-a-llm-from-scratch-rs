@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 anyhow.workspace = true
 chapter03.workspace = true
-plotters = "=0.3"
+plotters.workspace = true
 tiktoken.workspace = true
 
 [dependencies.burn]

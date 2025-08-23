@@ -7,6 +7,16 @@ use burn::tensor::{DType, activation};
 use chapter04::GptModel;
 use tiktoken::ext::Encoding;
 
+#[derive(Config, Copy)]
+pub struct GenerateOptions {
+    pub max_new_tokens: usize,
+    pub context_size: usize,
+    #[config(default = 0.0)]
+    pub temperature: f32,
+    pub topk: Option<usize>,
+    pub eos_id: Option<usize>,
+}
+
 pub trait Tokenizer<B: Backend> {
     fn detokenize(&self, ids: Tensor<B, 2, Int>) -> anyhow::Result<String>;
 
@@ -72,12 +82,16 @@ pub fn cross_entropy<B: Backend, const D: usize, const D2: usize>(
 pub fn generate<B: Backend<IntElem = i64>>(
     model: &GptModel<B>,
     mut idx: Tensor<B, 2, Int>,
-    max_new_tokens: usize,
-    context_size: usize,
-    temperature: Option<f32>,
-    topk: Option<usize>,
-    eos_id: Option<usize>,
+    opts: GenerateOptions,
 ) -> Tensor<B, 2, Int> {
+    let GenerateOptions {
+        max_new_tokens,
+        context_size,
+        temperature,
+        topk,
+        eos_id,
+    } = opts;
+
     let context_size = context_size as i32;
 
     for _ in 0..max_new_tokens {
@@ -95,14 +109,12 @@ pub fn generate<B: Backend<IntElem = i64>>(
         // println!("probas.shape: {:?}", logits.shape());
 
         let dim = logits.dims().len() - 1;
-        let idx_next = match temperature {
-            Some(t) => {
-                logits = logits / t;
-                let probas = activation::softmax(logits.clone(), dim);
-                // 自己实现的 multinomial 目前看起来太吃内存，导致 OOM。
-                crate::rand::multinomial(probas)
-            }
-            None => logits.argmax(dim),
+        let idx_next = if temperature != 0.0 {
+            logits = logits / temperature;
+            let probas = activation::softmax(logits.clone(), dim);
+            crate::rand::multinomial(probas)
+        } else {
+            logits.argmax(dim)
         };
 
         match eos_id {

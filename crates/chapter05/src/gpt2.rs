@@ -123,7 +123,8 @@ pub fn load_weights_into_gpt2<B: Backend>(params: Params, model: &mut GptModel<B
         let (q_b, k_b, v_b) = tripple_split_1d(&src.attn.c_attn.b, device)?;
         checked_assign_param(dst.attn.wq.bias.as_mut().expect("miss q-bias"), q_b)
             .context("load attention query bias")?;
-        checked_assign_param(dst.attn.wk.bias.as_mut().expect("miss k-bias"), k_b).context("load attention key bias")?;
+        checked_assign_param(dst.attn.wk.bias.as_mut().expect("miss k-bias"), k_b)
+            .context("load attention key bias")?;
         checked_assign_param(dst.attn.wv.bias.as_mut().expect("miss v-bias"), v_b)
             .context("load attention value bias")?;
 

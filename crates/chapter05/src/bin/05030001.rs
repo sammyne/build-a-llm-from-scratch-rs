@@ -4,8 +4,7 @@ use anyhow::Context;
 use burn::backend::{Autodiff, LibTorch};
 use burn::module::AutodiffModule;
 use burn::prelude::*;
-use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder};
-use chapter04::{Config, GptModel, utils};
+use chapter04::utils;
 use chapter05::config::GPT_124M;
 use chapter05::utils::Tokenizer;
 use tiktoken::ext::Encoding;
@@ -25,7 +24,8 @@ fn main() -> anyhow::Result<()> {
     B::seed(123);
     let device = &D::Cpu;
 
-    let model = load(GPT_124M, "gpt_124m_trained.mpk", device)
+    let model = GPT_124M
+        .load::<B>("gpt_124m_trained.mpk", device)
         .context("load model")?
         .valid();
 
@@ -36,12 +36,4 @@ fn main() -> anyhow::Result<()> {
     println!("Output text:\n{out}");
 
     Ok(())
-}
-
-fn load(c: &Config, path: &str, device: &D) -> anyhow::Result<GptModel<B>> {
-    let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
-
-    GptModel::<B>::new(c, device)
-        .load_file(path, &recorder, device)
-        .context("load model")
 }

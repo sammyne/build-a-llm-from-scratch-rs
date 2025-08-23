@@ -7,7 +7,6 @@ use crate::x::TensorExt;
 /// 参数：`probs` - 2 维概率数组。
 /// 返回值：采样到的对象下标（索引）
 /// 假设 probs 的最后一维每个元素的和为 1。
-/// TODO: 解决太吃内存导致 OOM 的问题。
 pub fn multinomial<B: Backend>(probas: Tensor<B, 2>) -> Tensor<B, 2, Int> {
     // let ndim = *probas.dims().last().expect("get last dim");
     let [d0, _] = probas.dims();
