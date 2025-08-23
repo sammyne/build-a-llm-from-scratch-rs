@@ -7,6 +7,7 @@ PyTorch 代码。
 两种开发模式
 1. Debian 12
 2. 用 docker/Dockerfile 描述的 docker 容器编译好程序，传到 Google Colab 运行
+  - 使用这种模式时，注意安装温馨提示更新 `LD_LIBRARY_PATH` 等环境变量
 
 ## 快速开始
 
@@ -47,6 +48,8 @@ PyTorch 代码。
 - 可以白嫖 GPU 资源的地方
   - [Google Colab](https://colab.research.google.com/)
   - https://www.kaggle.com/：如果选用 GPU T4 的话，可以用两块 GPU T4 
+- Google Colab 会定期升级环境的 PyTorch 版本。burn 底层依赖的 torch-sys 的编译过程默认会校验 PyTorch 符合期望时，否则保持，可
+  尝试通过 `LIBTORCH_BYPASS_VERSION_CHECK` 环境变量绕过去。只要编译出来的可执行文件能运行应该问题就不大。
 
 ## 参考文献
 - https://github.com/rasbt/LLMs-from-scratch

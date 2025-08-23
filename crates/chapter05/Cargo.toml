@@ -14,6 +14,7 @@ chapter04.workspace = true
 
 rand = "0.8"
 plotters.workspace = true
+minikit.workspace = true
 
 [dependencies.burn]
 features = ["autodiff", "ndarray", "tch"]

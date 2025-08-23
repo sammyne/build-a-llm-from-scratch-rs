@@ -1041,6 +1041,7 @@ dependencies = [
  "burn",
  "chapter02",
  "chapter04",
+ "minikit",
  "plotters",
  "rand 0.8.5",
  "serde",
