@@ -1,11 +1,10 @@
 use anyhow::Context as _;
 use burn::backend::{Autodiff, LibTorch};
 use burn::module::Module;
-use burn::nn::LinearConfig;
 use burn::prelude::Backend;
 use burn::tensor::{Tensor, activation, s};
 use chapter05::utils::Tokenizer as _;
-use chapter06::utils::{self, RequireGradMapper};
+use chapter06::utils::{self};
 use tiktoken::ext::Encoding;
 
 type B = Autodiff<LibTorch>;
@@ -16,20 +15,7 @@ type Device = <LibTorch as Backend>::Device;
 fn main() -> anyhow::Result<()> {
     let device = &Device::Cpu;
 
-    let model = utils::load_gpt2("gpt2/124M", device).context("load model")?;
-
-    B::seed(123);
-
-    let mut model = model.no_grad();
-
-    const NUM_CLASSES: usize = 2;
-    let emb_dim = model.tok_emb.weight.dims()[1];
-    model.out_head = LinearConfig::new(emb_dim, NUM_CLASSES).with_bias(true).init(device);
-
-    let trf_block = model.trf_blocks.last_mut().context("miss last transfomer block")?;
-    *trf_block = trf_block.clone().map(&mut RequireGradMapper);
-
-    model.final_norm = model.final_norm.clone().map(&mut RequireGradMapper);
+    let model = utils::load_gpt2_for_fine_tuning("gpt2/124M", device).context("load model")?;
 
     let tokenizer = Encoding::gpt2();
 
