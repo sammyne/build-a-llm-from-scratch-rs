@@ -58,6 +58,9 @@ pub fn load_gpt2<B: Backend, P: AsRef<Path>>(param_dir: P, device: &B::Device) -
     // println!("e1: {}", settings.emb_dim);
     // println!("e2: {:?}", model.tok_emb.weight.dims());
 
+    // println!("e1: {}", settings.context_length);
+    // println!("e2: {:?}", model.pos_emb.weight.dims());
+
     gpt2::load_weights_into_gpt2(params, &mut model).context("load weights into model")?;
 
     Ok(model)
