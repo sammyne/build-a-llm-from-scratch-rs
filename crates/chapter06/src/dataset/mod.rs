@@ -12,10 +12,14 @@ use polars::prelude::*;
 
 pub type Data<B> = (Tensor<B, 1, Int>, Tensor<B, 1, Int>);
 
+#[derive(Config)]
 pub struct DataLoaderOptions {
+    #[config(default = 8)]
     pub batch_size: usize,
     pub shuffle_seed: Option<u64>,
+    #[config(default = 0)]
     pub num_workers: usize,
+    #[config(default = false)]
     pub drop_last: bool,
 }
 
@@ -23,7 +27,7 @@ pub struct LoadCsvOptions<'a, D, T> {
     path: &'a str,
     tokenizer: &'a T,
     max_length: Option<usize>,
-    pad_token_id: Option<u32>,
+    pad_token_id: u32,
     device: &'a D,
 }
 
@@ -33,31 +37,23 @@ pub struct SpamDataset<B: Backend> {
     pub max_length: usize,
 }
 
-impl DataLoaderOptions {
-    pub fn with_drop_last(mut self, yes: bool) -> Self {
-        self.drop_last = yes;
-        self
-    }
-}
-
-impl Default for DataLoaderOptions {
-    fn default() -> Self {
-        Self {
-            batch_size: 8,
-            shuffle_seed: 123.into(),
-            num_workers: 0,
-            drop_last: false,
-        }
-    }
-}
-
 impl<'a, D, T> LoadCsvOptions<'a, D, T> {
+    // pub fn with_max_length(mut self, v: usize) -> Self {
+    //     self.max_length = Some(v);
+    //     self
+    // }
+
+    // pub fn with_pad_token_id(mut self, v: u32) -> Self {
+    //     self.pad_token_id = v;
+    //     self
+    // }
+
     pub fn new(path: &'a str, tokenizer: &'a T, device: &'a D) -> Self {
         Self {
             path,
             tokenizer,
             max_length: None,
-            pad_token_id: None,
+            pad_token_id: 50256,
             device,
         }
     }
@@ -103,7 +99,6 @@ impl<B: Backend> SpamDataset<B> {
 
             let mut encoded_text_tensors = Vec::with_capacity(encoded_texts.len());
 
-            let pad_token_id = pad_token_id.unwrap_or(50256);
             for v in encoded_texts.iter_mut() {
                 v.resize(max_length, pad_token_id);
 

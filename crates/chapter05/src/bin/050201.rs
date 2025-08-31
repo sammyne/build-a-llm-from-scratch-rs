@@ -111,7 +111,7 @@ where
 }
 
 #[derive(Serialize, Deserialize)]
-struct TrainOveriew {
+struct TrainOverview {
     epoches: usize,
     train_losses: Vec<f32>,
     val_losses: Vec<f32>,
@@ -126,7 +126,7 @@ struct EvaluateOpts<'a, B: AutodiffBackend> {
     eval_iter: usize,
 }
 
-impl TrainOveriew {
+impl TrainOverview {
     pub fn save(&self, path: &str) -> anyhow::Result<()> {
         let mut f = OpenOptions::new()
             .write(true)
@@ -164,7 +164,7 @@ where
     println!("{}", decoded_text.replace('\n', " "));
 }
 
-fn train_model_simple<B, O, T>(opts: TrainOpts<'_, B, O, T>) -> TrainOveriew
+fn train_model_simple<B, O, T>(opts: TrainOpts<'_, B, O, T>) -> TrainOverview
 where
     B: AutodiffBackend<FloatElem = f32>,
     O: Optimizer<GptModel<B>, B>,
@@ -229,7 +229,7 @@ where
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
     model.save_file(MODEL_PATH, &recorder).expect("save model");
 
-    let out = TrainOveriew {
+    let out = TrainOverview {
         epoches,
         train_losses,
         val_losses,

@@ -8,6 +8,9 @@ anyhow.workspace = true
 chapter02.workspace = true
 chapter04.workspace = true
 chapter05 = { version = "0.1.0", path = "../chapter05" }
+plotters.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 tiktoken.workspace = true
 
 [dependencies.burn]
@@ -17,3 +20,11 @@ workspace = true
 [dependencies.polars]
 features = ["dtype-struct", "lazy", "random", "strings"]
 version = "0.49"
+
+[build-dependencies]
+anyhow.workspace = true
+zip = "4.6.0"
+
+[build-dependencies.reqwest]
+features = ["blocking"]
+workspace = true

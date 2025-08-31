@@ -3,13 +3,13 @@ use std::fs::File;
 use anyhow::Context as _;
 use plotters::element::DashedPathElement;
 use plotters::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 fn main() -> anyhow::Result<()> {
     const PATH: &str = "train-overview.json";
-    const OUT_PATH: &str = "loss.svg";
+    const OUT_PATH: &str = "accuracy.svg";
 
-    let data = TrainOverview::load(PATH).context("load train overview")?;
+    let data = LossesOverview::load(PATH).context("load accuracy overview")?;
 
     plot(data, OUT_PATH).context("plot")?;
 
@@ -18,32 +18,29 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(Serialize, Deserialize)]
-struct TrainOverview {
-    epoches: usize,
-    train_losses: Vec<f32>,
-    val_losses: Vec<f32>,
-    track_tokens_seen: Vec<usize>,
+#[derive(Deserialize)]
+struct LossesOverview {
+    train_accs: Vec<f32>,
+    val_accs: Vec<f32>,
 }
 
-impl TrainOverview {
+impl LossesOverview {
     pub fn load(path: &str) -> anyhow::Result<Self> {
         let mut f = File::open(path).context("open file")?;
         serde_json::from_reader(&mut f).context("json loads")
     }
 }
 
-fn plot(data: TrainOverview, path: &str) -> anyhow::Result<()> {
-    let TrainOverview {
-        epoches,
-        train_losses,
-        val_losses,
-        ..
+fn plot(data: LossesOverview, path: &str) -> anyhow::Result<()> {
+    let LossesOverview {
+        train_accs, val_accs, ..
     } = data;
 
+    let epoches = train_accs.len();
+
     let x: Vec<f32> = {
-        let s = (epoches as f32) / ((train_losses.len() - 1) as f32);
-        (0..=train_losses.len()).map(|v| v as f32 * s).collect()
+        let s = (epoches as f32) / ((train_accs.len() - 1) as f32);
+        (0..=train_accs.len()).map(|v| v as f32 * s).collect()
     };
 
     // 创建绘图区域，大小为 500x300 像素，保存为 SVG。
@@ -52,9 +49,9 @@ fn plot(data: TrainOverview, path: &str) -> anyhow::Result<()> {
 
     // 创建主图表
     let y_axis = {
-        let m = train_losses
+        let m = train_accs
             .iter()
-            .chain(val_losses.iter())
+            .chain(val_accs.iter())
             .copied()
             .fold(0.0f32, |acc, v| acc.max(v));
         0.0..m
@@ -79,10 +76,7 @@ fn plot(data: TrainOverview, path: &str) -> anyhow::Result<()> {
 
     // 绘制训练损失曲线
     chart
-        .draw_series(LineSeries::new(
-            x.iter().copied().zip(train_losses),
-            BLUE.stroke_width(2),
-        ))
+        .draw_series(LineSeries::new(x.iter().copied().zip(train_accs), BLUE.stroke_width(2)))
         .context("draw training loss")?
         .label("Training loss")
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], BLUE));
@@ -90,7 +84,7 @@ fn plot(data: TrainOverview, path: &str) -> anyhow::Result<()> {
     // 绘制验证损失曲线（虚线样式）
     chart
         .draw_series(DashedLineSeries::new(
-            x.iter().copied().zip(val_losses),
+            x.iter().copied().zip(val_accs),
             10,
             5,
             RED.stroke_width(2),
