@@ -1067,6 +1067,7 @@ dependencies = [
  "chapter02",
  "chapter04",
  "chapter05",
+ "minikit",
  "plotters",
  "polars",
  "reqwest",

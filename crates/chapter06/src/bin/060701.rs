@@ -24,7 +24,12 @@ type Device = <LibTorch as Backend>::Device;
 
 /// 需要先进去 gpt2 运行 uv run main.py 准备好数据。
 fn main() -> anyhow::Result<()> {
-    let device = &Device::Cpu;
+    let device = if !minikit::cuda::is_available() {
+        &Device::Cpu
+    } else {
+        println!("using CUDA");
+        &Device::Cuda(0)
+    };
 
     let model = utils::load_gpt2("gpt2/124M", device).context("load model")?;
 
@@ -49,8 +54,8 @@ fn main() -> anyhow::Result<()> {
     let opts = LoadCsvOptions::new("validation.csv", &tokenizer, device);
     let validation_dataset = SpamDataset::<B>::load_csv(opts).context("load validation dataset")?;
 
-    let opts = LoadCsvOptions::new("test.csv", &tokenizer, device);
-    let test_dataset = SpamDataset::<B>::load_csv(opts).context("load test dataset")?;
+    // let opts = LoadCsvOptions::new("test.csv", &tokenizer, device);
+    // let test_dataset = SpamDataset::<B>::load_csv(opts).context("load test dataset")?;
 
     // 对于训练集，丢弃不完整的最后一批。
     let opts = DataLoaderOptions::new()
@@ -59,7 +64,7 @@ fn main() -> anyhow::Result<()> {
     let train_loader = dataset::load(train_dataset, opts);
 
     let validation_loader = dataset::load(validation_dataset, DataLoaderOptions::new());
-    let test_loader = dataset::load(test_dataset, DataLoaderOptions::new());
+    // let test_loader = dataset::load(test_dataset, DataLoaderOptions::new());
 
     let start = Instant::now();
     B::seed(123);
@@ -83,20 +88,13 @@ fn main() -> anyhow::Result<()> {
     let execution_time_minutes = start.elapsed().as_secs_f64() / 60.0;
     println!("Training completed in {execution_time_minutes:.2} minutes");
 
-    let train_accuracy = loss::calc_accuracy_loader(train_loader.as_ref(), &model, device, None);
-    let val_accuracy = loss::calc_accuracy_loader(validation_loader.as_ref(), &model, device, None);
-    let test_accuracy = loss::calc_accuracy_loader(test_loader.as_ref(), &model, device, None);
-
-    println!("Train accuracy: {:.2}%", train_accuracy * 100.0);
-    println!("Validation accuracy: {:.2}%", val_accuracy * 100.0);
-    println!("Test accuracy: {:.2}%", test_accuracy * 100.0);
-
     // 保存模型用于后续教程
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
 
     const MODEL_PATH: &str = "spam-classifier-model";
     model.save_file(MODEL_PATH, &recorder).expect("save model");
 
+    // 保存训练数据，用于后续绘图。
     overview.save("train-overview.json").context("save train-overview")?;
 
     Ok(())
