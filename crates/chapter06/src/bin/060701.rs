@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::fs::OpenOptions;
 use std::time::Instant;
 
 use anyhow::Context as _;
@@ -10,12 +10,12 @@ use burn::nn::LinearConfig;
 use burn::optim::{AdamWConfig, GradientsParams, Optimizer};
 use burn::prelude::Backend;
 use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder};
+use burn::serde::Serialize;
 use burn::tensor::backend::AutodiffBackend;
 use chapter04::GptModel;
-use chapter05::gpt2;
 use chapter06::dataset::{self, Batch, DataLoaderOptions, LoadCsvOptions, SpamDataset};
-use chapter06::loss;
 use chapter06::utils::RequireGradMapper;
+use chapter06::{loss, utils};
 use tiktoken::ext::Encoding;
 
 type B = Autodiff<LibTorch>;
@@ -26,25 +26,15 @@ type Device = <LibTorch as Backend>::Device;
 fn main() -> anyhow::Result<()> {
     let device = &Device::Cpu;
 
-    let data_dir = &Path::new("gpt2/gpt2/124M");
-    let (settings, params) = {
-        let (mut s, p) = gpt2::load_settings_and_params(&data_dir).expect("load gpt2 config");
-        s.drop_rate = 0.0;
-        (s, p)
-    };
-
-    let mut model = GptModel::<B>::new(&settings, device);
-
-    gpt2::load_weights_into_gpt2(params, &mut model).context("load weights into model")?;
+    let model = utils::load_gpt2("gpt2/124M", device).context("load model")?;
 
     B::seed(123);
 
     let mut model = model.no_grad();
 
     const NUM_CLASSES: usize = 2;
-    model.out_head = LinearConfig::new(settings.emb_dim, NUM_CLASSES)
-        .with_bias(true)
-        .init(device);
+    let emb_dim = model.tok_emb.weight.dims()[1];
+    model.out_head = LinearConfig::new(emb_dim, NUM_CLASSES).with_bias(true).init(device);
 
     let trf_block = model.trf_blocks.last_mut().context("miss last transfomer block")?;
     *trf_block = trf_block.clone().map(&mut RequireGradMapper);
@@ -63,9 +53,13 @@ fn main() -> anyhow::Result<()> {
     let test_dataset = SpamDataset::<B>::load_csv(opts).context("load test dataset")?;
 
     // 对于训练集，丢弃不完整的最后一批。
-    let train_loader = dataset::load(train_dataset, DataLoaderOptions::default().with_drop_last(true));
-    let validation_loader = dataset::load(validation_dataset, Default::default());
-    let test_loader = dataset::load(test_dataset, Default::default());
+    let opts = DataLoaderOptions::new()
+        .with_shuffle_seed(Some(456))
+        .with_drop_last(true);
+    let train_loader = dataset::load(train_dataset, opts);
+
+    let validation_loader = dataset::load(validation_dataset, DataLoaderOptions::new());
+    let test_loader = dataset::load(test_dataset, DataLoaderOptions::new());
 
     let start = Instant::now();
     B::seed(123);
@@ -84,7 +78,7 @@ fn main() -> anyhow::Result<()> {
         lr: 5e-5,
     };
 
-    let TrainOutput { model, .. } = train_classifer_simple(opts);
+    let (model, _, overview) = train_classifer_simple(opts);
 
     let execution_time_minutes = start.elapsed().as_secs_f64() / 60.0;
     println!("Training completed in {execution_time_minutes:.2} minutes");
@@ -103,10 +97,7 @@ fn main() -> anyhow::Result<()> {
     const MODEL_PATH: &str = "spam-classifier-model";
     model.save_file(MODEL_PATH, &recorder).expect("save model");
 
-    // let optimizer_path = PathBuf::from("spam-classifier-optimizer");
-    // recorder
-    //     .record(optimizer.to_record(), optimizer_path)
-    //     .context("save optimizer")?;
+    overview.save("train-overview.json").context("save train-overview")?;
 
     Ok(())
 }
@@ -135,18 +126,25 @@ where
     lr: LearningRate,
 }
 
-struct TrainOutput<B, O>
-where
-    B: AutodiffBackend,
-    O: Optimizer<GptModel<B>, B>,
-{
-    model: GptModel<B>,
-    optimizer: O,
+#[derive(Serialize)]
+struct TrainOverview {
     train_losses: Vec<f32>,
     val_losses: Vec<f32>,
     train_accs: Vec<f32>,
     val_accs: Vec<f32>,
     examples_seen: usize,
+}
+
+impl TrainOverview {
+    pub fn save(&self, path: &str) -> anyhow::Result<()> {
+        let mut f = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(path)
+            .context("open file")?;
+        serde_json::to_writer(&mut f, self).context("json dumps")
+    }
 }
 
 fn evaluate_model<B>(opts: EvaluateOpts<'_, B>) -> (f32, f32)
@@ -162,7 +160,7 @@ where
     (train_loss, val_loss)
 }
 
-fn train_classifer_simple<B, O>(opts: TrainOpts<'_, B, O>) -> TrainOutput<B, O>
+fn train_classifer_simple<B, O>(opts: TrainOpts<'_, B, O>) -> (GptModel<B>, O, TrainOverview)
 where
     B: AutodiffBackend<FloatElem = f32>,
     O: Optimizer<GptModel<B>, B>,
@@ -229,9 +227,7 @@ where
         val_accs.push(val_accuracy);
     }
 
-    let out = TrainOutput {
-        model,
-        optimizer,
+    let overview = TrainOverview {
         train_losses,
         val_losses,
         train_accs,
@@ -239,5 +235,5 @@ where
         examples_seen,
     };
 
-    out
+    (model, optimizer, overview)
 }

@@ -3,13 +3,13 @@ use std::fs::File;
 use anyhow::Context as _;
 use plotters::element::DashedPathElement;
 use plotters::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 fn main() -> anyhow::Result<()> {
     const PATH: &str = "train-overview.json";
     const OUT_PATH: &str = "loss.svg";
 
-    let data = TrainOverview::load(PATH).context("load train overview")?;
+    let data = LossesOverview::load(PATH).context("load loss overview")?;
 
     plot(data, OUT_PATH).context("plot")?;
 
@@ -18,28 +18,27 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(Serialize, Deserialize)]
-struct TrainOverview {
-    epoches: usize,
+#[derive(Deserialize)]
+struct LossesOverview {
     train_losses: Vec<f32>,
     val_losses: Vec<f32>,
-    track_tokens_seen: Vec<usize>,
 }
 
-impl TrainOverview {
+impl LossesOverview {
     pub fn load(path: &str) -> anyhow::Result<Self> {
         let mut f = File::open(path).context("open file")?;
         serde_json::from_reader(&mut f).context("json loads")
     }
 }
 
-fn plot(data: TrainOverview, path: &str) -> anyhow::Result<()> {
-    let TrainOverview {
-        epoches,
+fn plot(data: LossesOverview, path: &str) -> anyhow::Result<()> {
+    let LossesOverview {
         train_losses,
         val_losses,
         ..
     } = data;
+
+    let epoches = train_losses.len();
 
     let x: Vec<f32> = {
         let s = (epoches as f32) / ((train_losses.len() - 1) as f32);

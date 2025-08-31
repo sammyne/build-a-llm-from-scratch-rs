@@ -1,9 +1,12 @@
+use std::path::Path;
 use std::sync::Arc;
 
 use anyhow::Context as _;
 use burn::module::{ModuleMapper, ParamId, Parameter as _};
 use burn::prelude::Backend;
 use burn::tensor::{Bool, Int, Tensor};
+use chapter04::{GPT_124M, GptModel};
+use chapter05::gpt2;
 use polars::frame::DataFrame;
 use polars::io::SerReader as _;
 use polars::prelude::{CsvReadOptions, DataType, Schema};
@@ -38,4 +41,24 @@ pub fn load_csv(path: &str) -> anyhow::Result<DataFrame> {
         .context("finish reading csv")?;
 
     Ok(df)
+}
+
+pub fn load_gpt2<B: Backend, P: AsRef<Path>>(param_dir: P, device: &B::Device) -> anyhow::Result<GptModel<B>> {
+    let (settings, params) = {
+        let (mut s, p) = gpt2::load_settings_and_params(param_dir.as_ref()).expect("load config");
+        s.drop_rate = 0.0;
+        (s, p)
+    };
+
+    let mut model = GPT_124M
+        .with_context_length(settings.context_length)
+        .with_qkv_bias(true)
+        .init::<B>(device);
+
+    // println!("e1: {}", settings.emb_dim);
+    // println!("e2: {:?}", model.tok_emb.weight.dims());
+
+    gpt2::load_weights_into_gpt2(params, &mut model).context("load weights into model")?;
+
+    Ok(model)
 }

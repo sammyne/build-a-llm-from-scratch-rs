@@ -5,8 +5,8 @@ use burn::backend::{Autodiff, LibTorch};
 use burn::module::Module;
 use burn::nn::LinearConfig;
 use burn::prelude::Backend;
-use burn::tensor::{Tensor, s};
-use chapter04::GptModel;
+use burn::tensor::Tensor;
+use chapter04::GPT_124M;
 use chapter05::gpt2;
 use chapter05::utils::Tokenizer as _;
 use chapter06::utils::RequireGradMapper;
@@ -20,14 +20,17 @@ type Device = <LibTorch as Backend>::Device;
 fn main() -> anyhow::Result<()> {
     let device = &Device::Cpu;
 
-    let data_dir = &Path::new("gpt2/gpt2/124M");
+    let data_dir = &Path::new("gpt2/124M");
     let (settings, params) = {
         let (mut s, p) = gpt2::load_settings_and_params(&data_dir).expect("load gpt2 config");
         s.drop_rate = 0.0;
         (s, p)
     };
 
-    let mut model = GptModel::<B>::new(&settings, device);
+    let mut model = GPT_124M
+        .with_context_length(settings.context_length)
+        .with_qkv_bias(true)
+        .init::<B>(device);
 
     gpt2::load_weights_into_gpt2(params, &mut model).context("load weights into model")?;
 
@@ -48,15 +51,10 @@ fn main() -> anyhow::Result<()> {
     let tokenizer = Encoding::gpt2();
 
     let inputs: Tensor<B, 2, _> = tokenizer.tokenize("Do you have time").to_device(device);
-    // let inputs = inputs.unsqueeze::<1>();
-    println!("Inputs: {inputs}");
-    println!("Inputs dimensions: {:?}", inputs.shape());
 
     let outputs = model.no_grad().forward(inputs);
     println!("Outputs:\n{outputs}");
     println!("Outputs dimensions:\n{:?}", outputs.shape());
-
-    println!("Last output token: {}", outputs.slice(s![.., -1, ..]).squeeze::<2>(1));
 
     Ok(())
 }

@@ -7,8 +7,7 @@ use burn::prelude::Backend;
 use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder};
 use burn::tensor::backend::AutodiffBackend;
 use burn::tensor::{Int, Tensor, s};
-use chapter04::GptModel;
-use chapter05::gpt2;
+use chapter04::{GPT_124M, GptModel};
 use chapter06::dataset::{LoadCsvOptions, SpamDataset};
 use tiktoken::ext::Encoding;
 
@@ -16,6 +15,7 @@ type B = Autodiff<LibTorch>;
 
 type Device = <LibTorch as Backend>::Device;
 
+/// 依赖 060701 训练出的模型。
 fn main() -> anyhow::Result<()> {
     let model_path = Path::new("spam-classifier-model.mpk");
     if !model_path.exists() {
@@ -24,30 +24,20 @@ fn main() -> anyhow::Result<()> {
 
     let device = &Device::Cpu;
 
-    let data_dir = &Path::new("gpt2/gpt2/124M");
-    let settings = {
-        let (mut s, _) = gpt2::load_settings_and_params(&data_dir).expect("load gpt2 config");
-        s.drop_rate = 0.0;
-        s
-    };
-
-    let model = GptModel::<B>::new(&settings, device);
-
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
-    let model = model.load_file(model_path, &recorder, device).context("load model")?;
+
+    let model = GPT_124M
+        .with_qkv_bias(true)
+        .init::<B>(device)
+        .load_file("spam-classifier-model.mpk", &recorder, device)
+        .context("load model")?;
+    let model = model.no_grad();
 
     let tokenizer = Encoding::gpt2();
 
     let opts = LoadCsvOptions::new("train.csv", &tokenizer, device);
     let train_dataset = SpamDataset::<B>::load_csv(opts).context("load train dataset")?;
     let max_length = train_dataset.max_length;
-
-    const TEXT_1: &str = std::concat!(
-        "You are a winner you have been specially",
-        " selected to receive $1000 cash or a $2000 award."
-    );
-    let out = classify_review(TEXT_1, model.clone(), &tokenizer, device, max_length.into(), None);
-    println!("{out}");
 
     const TEXT_2: &str = std::concat!(
         "Hey, just wanted to check if we're still on",
