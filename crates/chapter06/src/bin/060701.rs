@@ -111,6 +111,7 @@ where
 
 #[derive(Serialize)]
 struct TrainOverview {
+    epoches: usize,
     train_losses: Vec<f32>,
     val_losses: Vec<f32>,
     train_accs: Vec<f32>,
@@ -211,6 +212,7 @@ where
     }
 
     let overview = TrainOverview {
+        epoches,
         train_losses,
         val_losses,
         train_accs,

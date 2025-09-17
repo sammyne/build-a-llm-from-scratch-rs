@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::fs::OpenOptions;
 use std::time::Instant;
 
 use anyhow::Context;
@@ -11,10 +11,10 @@ use burn::prelude::Backend;
 use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder};
 use burn::tensor::backend::AutodiffBackend;
 use chapter04::GptModel;
-use chapter05::gpt2;
 use chapter05::utils::Tokenizer;
 use chapter07::dataset::Batch;
 use chapter07::{loss, utils};
+use serde::Serialize;
 use tiktoken::ext::Encoding;
 
 type B = Autodiff<LibTorch>;
@@ -25,16 +25,7 @@ type Device = <LibTorch as Backend>::Device;
 fn main() -> anyhow::Result<()> {
     let device = &Device::Cpu;
 
-    let data_dir = &Path::new("gpt2/gpt2/355M");
-    let (settings, params) = {
-        let (mut s, p) = gpt2::load_settings_and_params(&data_dir).expect("load gpt2 config");
-        s.drop_rate = 0.0;
-        (s, p)
-    };
-
-    let mut model = GptModel::<B>::new(&settings, device);
-
-    gpt2::load_weights_into_gpt2(params, &mut model).context("load weights into model")?;
+    let model = chapter06::utils::load_gpt2::<B, _>("gpt2/355M", device).context("load GPT-2")?;
 
     B::seed(123);
     let tokenizer = Encoding::gpt2();
@@ -49,13 +40,6 @@ fn main() -> anyhow::Result<()> {
     let (train_loader, _test_loader, val_loader) =
         chapter07::dataset::load_and_split("instruction-data.json", &tokenizer)
             .context("load and split data loader")?;
-
-    let train_loss =
-        chapter07::loss::calc_loss_loader(train_loader.as_ref(), &model.clone().no_grad(), 5.into(), device);
-    let val_loss = chapter07::loss::calc_loss_loader(val_loader.as_ref(), &model.clone().no_grad(), 5.into(), device);
-
-    println!("Training loss: {}", train_loss);
-    println!("Validation loss: {}", val_loss);
 
     let start = Instant::now();
     B::seed(123);
@@ -78,7 +62,8 @@ fn main() -> anyhow::Result<()> {
         lr: 0.00005,
     };
 
-    let (model, ..) = train_model_simple(opts);
+    // 底层的 CrossEntropy 不一样，因此不能复用第 5 章的同名函数。
+    let (model, _, overview) = train_model_simple(opts);
 
     println!("Training completed in {:?}", start.elapsed());
 
@@ -86,7 +71,9 @@ fn main() -> anyhow::Result<()> {
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
 
     const MODEL_PATH: &str = "gpt-355m-model-sft";
-    model.save_file(MODEL_PATH, &recorder).expect("save model");
+    model.save_file(MODEL_PATH, &recorder).context("save model")?;
+
+    overview.save("train-overview.json").context("save train overview")?;
 
     Ok(())
 }
@@ -118,6 +105,26 @@ struct EvaluateOpts<'a, B: AutodiffBackend> {
     eval_iter: usize,
 }
 
+#[derive(Serialize)]
+struct TrainOverview {
+    epoches: usize,
+    train_losses: Vec<f32>,
+    val_losses: Vec<f32>,
+    tokens_seen: Vec<usize>,
+}
+
+impl TrainOverview {
+    pub fn save(&self, path: &str) -> anyhow::Result<()> {
+        let mut f = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(path)
+            .context("open file")?;
+        serde_json::to_writer(&mut f, self).context("json dumps")
+    }
+}
+
 fn evaluate_model<B>(opts: EvaluateOpts<'_, B>) -> (f32, f32)
 where
     B: AutodiffBackend<FloatElem = f32>,
@@ -143,7 +150,7 @@ where
     println!("{}", decoded_text.replace('\n', " "));
 }
 
-fn train_model_simple<B, O, T>(opts: TrainOpts<'_, B, O, T>) -> (GptModel<B>, O, Vec<f32>, Vec<f32>, Vec<usize>)
+fn train_model_simple<B, O, T>(opts: TrainOpts<'_, B, O, T>) -> (GptModel<B>, O, TrainOverview)
 where
     B: AutodiffBackend<FloatElem = f32>,
     O: Optimizer<GptModel<B>, B>,
@@ -204,5 +211,12 @@ where
         generate_and_print_sample(model.clone(), tokenizer, device, start_context);
     }
 
-    (model, optimizer, train_losses, val_losses, track_tokens_seen)
+    let overview = TrainOverview {
+        epoches,
+        train_losses,
+        val_losses,
+        tokens_seen: track_tokens_seen,
+    };
+
+    (model, optimizer, overview)
 }
