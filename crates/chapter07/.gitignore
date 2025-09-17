@@ -1,3 +1,5 @@
 instruction-data.json
 *.mpk
 instruction-data-with-response.json
+train-overview.json
+*.svg

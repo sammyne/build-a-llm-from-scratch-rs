@@ -1089,6 +1089,7 @@ dependencies = [
  "chapter06",
  "clap",
  "indicatif",
+ "plotters",
  "reqwest",
  "serde",
  "serde_json",

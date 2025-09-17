@@ -6,7 +6,7 @@ use indicatif::ProgressIterator;
 use reqwest::Url;
 
 /// 准备步骤
-/// 1. 运行 ollama：docker run -it --rm -v $PWD/_ollama:/root/.ollama --name ollama ollama/ollama:0.11.4 serve
+/// 1. 运行 ollama：docker run -td --rm -v $PWD/_ollama:/root/.ollama --name ollama ollama/ollama:0.11.4 serve
 /// 2. 使用 8B 的 Llama 3 模型：docker exec -it ollama ollama run llama3
 /// 3. 查询 ollama 服务地址：docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ollama
 /// 4. 将上述地址设置为下述程序的 url 选项
@@ -50,10 +50,19 @@ fn generate_model_scores(json_data: &[DataWithModelResponse], model: &str, url: 
             entry.model_response
         );
 
-        let score: u8 = ollama::query_model(&prompt, model, url.clone())
-            .with_context(|| format!("{i}-th query_model"))?
-            .parse()
-            .with_context(|| format!("{i}-th parse score"))?;
+        let score: u8 = {
+            let r = ollama::query_model(&prompt, model, url.clone()).with_context(|| format!("{i}-th query_model"))?;
+            match r.parse() {
+                Ok(v) => v,
+                Err(_) => {
+                    // ollama 有时没有按要求给出仅有整数的响应。
+                    eprintln!("\n---");
+                    eprintln!("unexpected response for prompt: {prompt}");
+                    eprintln!("got: {r}");
+                    continue;
+                }
+            }
+        };
 
         scores.push(score);
     }

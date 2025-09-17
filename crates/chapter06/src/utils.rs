@@ -52,7 +52,10 @@ pub fn load_gpt2<B: Backend, P: AsRef<Path>>(param_dir: P, device: &B::Device) -
     };
 
     let mut model = GPT_124M
+        .with_emb_dim(settings.emb_dim)
         .with_context_length(settings.context_length)
+        .with_nheads(settings.nheads)
+        .with_nlayers(settings.nlayers)
         .with_qkv_bias(true)
         .init::<B>(device);
 

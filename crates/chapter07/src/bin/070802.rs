@@ -5,7 +5,7 @@ use clap::Parser;
 use reqwest::Url;
 
 /// 准备步骤
-/// 1. 运行 ollama：docker run -it --rm -v $PWD/_ollama:/root/.ollama --name ollama ollama/ollama:0.11.4 serve
+/// 1. 运行 ollama：docker run -td --rm -v $PWD/_ollama:/root/.ollama --name ollama ollama/ollama:0.11.4 serve
 /// 2. 使用 8B 的 Llama 3 模型：docker exec -it ollama ollama run llama3
 /// 3. 查询 ollama 服务地址：docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ollama
 /// 4. 将上述地址设置为下述程序的 url 选项
