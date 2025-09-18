@@ -1089,6 +1089,7 @@ dependencies = [
  "chapter06",
  "clap",
  "indicatif",
+ "minikit",
  "plotters",
  "reqwest",
  "serde",

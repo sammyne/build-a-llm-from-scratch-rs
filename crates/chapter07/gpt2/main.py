@@ -11,7 +11,7 @@ print("Parameter dictionary keys:", params.keys())
 print(params["wte"])
 print("Token embedding weight tensor dimensions:", params["wte"].shape)
 
-path = "gpt2/355M/params-355m.json"
+path = "355M/params-355m.json"
 with open(path, "w", encoding="utf-8") as f:
     # json.dump(params, f, ensure_ascii=False)
     json.dump(params, f, default=lambda x: x.tolist() if isinstance(x, np.ndarray) else x)

@@ -23,7 +23,12 @@ type Device = <LibTorch as Backend>::Device;
 
 /// 需要先进去 gpt2 运行 uv run main.py 准备好数据。
 fn main() -> anyhow::Result<()> {
-    let device = &Device::Cpu;
+    let device = if !minikit::cuda::is_available() {
+        &Device::Cpu
+    } else {
+        println!("using CUDA");
+        &Device::Cuda(0)
+    };
 
     let model = chapter06::utils::load_gpt2::<B, _>("gpt2/355M", device).context("load GPT-2")?;
 
