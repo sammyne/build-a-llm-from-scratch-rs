@@ -5,14 +5,14 @@ use burn::prelude::Backend;
 type B = NdArray<f32>;
 
 fn main() {
-    B::seed(123);
+    let device = &<B as Backend>::Device::default();
 
-    let device = <B as Backend>::Device::default();
+    B::seed(device, 123);
 
     let vocab_size = 6;
     let output_dim = 3;
 
-    let embedding = EmbeddingConfig::new(vocab_size, output_dim).init::<B>(&device);
+    let embedding = EmbeddingConfig::new(vocab_size, output_dim).init::<B>(device);
     println!("Parameter containing:");
     println!("{:?}", embedding.weight.val());
 }

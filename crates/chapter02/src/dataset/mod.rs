@@ -24,7 +24,6 @@ pub struct LoaderV1Options {
     pub max_length: usize,
     pub stride: usize,
     pub shuffle_seed: Option<u64>,
-    /// TODO(xiangminli): 使用这个字段
     pub drop_last: bool,
     pub num_workers: usize,
 }

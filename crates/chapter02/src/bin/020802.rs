@@ -40,6 +40,7 @@ fn main() -> anyhow::Result<()> {
 
     let pos_embeddings =
         pos_embedding_layer.forward(Tensor::arange(0..(context_length as i64), &device).reshape([1, 4]));
+    // println!("position-embeddings = {pos_embeddings:?}");
     println!("position-embeddings.shape = {:?}", pos_embeddings.shape());
 
     let input_embeddings = token_embeddings + pos_embeddings;
