@@ -4,7 +4,7 @@ use burn::tensor::Tensor;
 type B = NdArray<f32>;
 
 fn main() {
-    let device = <B as burn::prelude::Backend>::Device::default();
+    let device = &<B as burn::prelude::Backend>::Device::default();
 
     let a = Tensor::<B, 4, _>::from_floats(
         [[
@@ -19,14 +19,14 @@ fn main() {
                 [0.4606, 0.5159, 0.4220, 0.5786],
             ],
         ]],
-        &device,
+        device,
     );
 
-    let first_head = a.clone().slice([0..1, 0..1]).squeeze::<3>(0).squeeze::<2>(0);
+    let first_head = a.clone().slice([0..1, 0..1]).squeeze::<2>();
     let first_res = first_head.clone().matmul(first_head.transpose());
     println!("{first_res}");
 
-    let second_head = a.clone().slice([0..1, 1..2]).squeeze::<3>(0).squeeze::<2>(0);
+    let second_head = a.clone().slice([0..1, 1..2]).squeeze::<2>();
     let second_res = second_head.clone().matmul(second_head.transpose());
     println!("\n{second_res}");
 }

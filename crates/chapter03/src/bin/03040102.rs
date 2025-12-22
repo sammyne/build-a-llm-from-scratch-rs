@@ -5,9 +5,9 @@ use burn::tensor::{Distribution, Tensor};
 type B = NdArray<f32>;
 
 fn main() {
-    let device = <B as Backend>::Device::default();
+    let device = &<B as Backend>::Device::default();
 
-    B::seed(123);
+    B::seed(device, 123);
 
     let inputs = Tensor::<B, 2, _>::from_floats(
         [
@@ -26,9 +26,9 @@ fn main() {
 
     let distribution = Distribution::Uniform(0.0, 1.0);
 
-    let _wq = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
-    let wk = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
-    let wv = Tensor::<B, 2_>::random([d_in, d_out], distribution, &device);
+    let _wq = Tensor::<B, 2_>::random([d_in, d_out], distribution, device);
+    let wk = Tensor::<B, 2_>::random([d_in, d_out], distribution, device);
+    let wv = Tensor::<B, 2_>::random([d_in, d_out], distribution, device);
 
     let keys = inputs.clone().matmul(wk);
     let values = inputs.clone().matmul(wv);

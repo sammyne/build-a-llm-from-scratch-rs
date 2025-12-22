@@ -6,9 +6,9 @@ use chapter03::attention::SelfAttentionV2;
 type B = NdArray<f32>;
 
 fn main() {
-    let device = <B as Backend>::Device::default();
+    let device = &<B as Backend>::Device::default();
 
-    B::seed(123);
+    B::seed(device, 123);
 
     let inputs = Tensor::<B, 2, _>::from_floats(
         [
@@ -19,13 +19,13 @@ fn main() {
             [0.77, 0.25, 0.10], // one (x^5)
             [0.05, 0.80, 0.55], // step (x^6)
         ],
-        &device,
+        device,
     );
 
     let d_in = inputs.dims()[1];
     let d_out = 2;
 
-    B::seed(789);
+    B::seed(device, 789);
     let sa_v2 = SelfAttentionV2::<B>::new(d_in, d_out, false);
 
     let queries = sa_v2.wq.forward(inputs.clone());
@@ -38,6 +38,6 @@ fn main() {
     // let attn_weights = activation::softmax(attn_scores.clone() / dk.sqrt(), minus1);
 
     let context_length = attn_scores.dims()[0];
-    let mask_simple = Tensor::<B, 2>::ones([context_length, context_length], &device).tril(0);
+    let mask_simple = Tensor::<B, 2>::ones([context_length, context_length], device).tril(0);
     println!("{mask_simple}\n");
 }

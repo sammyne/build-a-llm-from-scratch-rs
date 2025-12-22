@@ -6,9 +6,9 @@ use chapter03::attention::SelfAttentionV1;
 type B = NdArray<f32>;
 
 fn main() {
-    let device = <B as Backend>::Device::default();
+    let device = &<B as Backend>::Device::default();
 
-    B::seed(123);
+    B::seed(device, 123);
 
     let inputs = Tensor::<B, 2, _>::from_floats(
         [
@@ -19,13 +19,13 @@ fn main() {
             [0.77, 0.25, 0.10], // one (x^5)
             [0.05, 0.80, 0.55], // step (x^6)
         ],
-        &device,
+        device,
     );
 
     let d_in = inputs.dims()[1];
     let d_out = 2;
 
-    B::seed(123);
+    B::seed(device, 123);
     let sa_v1 = SelfAttentionV1::<B>::new(d_in, d_out);
     let context_vecs = sa_v1.forward(inputs);
     println!("{context_vecs}");

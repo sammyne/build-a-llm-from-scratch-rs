@@ -8,7 +8,7 @@ type B = Autodiff<NdArray<f32>>;
 fn main() {
     let device = &<B as Backend>::Device::default();
 
-    B::seed(123);
+    B::seed(device, 123);
 
     let inputs = Tensor::<B, 2, _>::from_floats(
         [
