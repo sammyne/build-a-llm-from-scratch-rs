@@ -14,7 +14,7 @@ pub fn generate_text_simple<B: Backend>(
         let idx_cond = idx.clone().slice(s![.., -context_size..]);
         let logits = model.forward(idx_cond);
 
-        let logits = logits.slice(s![.., -1, ..]).squeeze(1);
+        let logits = logits.slice(s![.., -1, ..]).squeeze_dim(1);
 
         let dim = logits.dims().len() - 1;
 

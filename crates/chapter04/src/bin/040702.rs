@@ -11,9 +11,9 @@ use tiktoken::ext::Encoding;
 type B = Autodiff<NdArray<f32>>;
 
 fn main() -> anyhow::Result<()> {
-    B::seed(123);
-
     let device = &<B as Backend>::Device::default();
+
+    B::seed(device, 123);
 
     let start_context = "Hello, I am";
 
@@ -34,7 +34,7 @@ fn main() -> anyhow::Result<()> {
     println!("Output length: {:?}", out.dims()[1]);
 
     let indices: Vec<u32> = out
-        .squeeze::<1>(0)
+        .squeeze_dim::<1>(0)
         .to_data()
         .convert_dtype(DType::U32)
         .into_vec()

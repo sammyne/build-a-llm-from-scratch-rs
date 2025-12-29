@@ -5,9 +5,9 @@ use chapter04::GPT_124M;
 type B = Autodiff<NdArray<f32>>;
 
 fn main() -> anyhow::Result<()> {
-    B::seed(123);
-
     let device = &<B as Backend>::Device::default();
+
+    B::seed(device, 123);
 
     let model = GPT_124M.init::<B>(device);
 

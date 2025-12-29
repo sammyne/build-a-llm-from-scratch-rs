@@ -6,9 +6,9 @@ use chapter04::{GPT_124M, TransformerBlockConfig};
 type B = Autodiff<NdArray<f32>>;
 
 fn main() {
-    B::seed(123);
-
     let device = &<B as Backend>::Device::default();
+
+    B::seed(device, 123);
 
     let x = Tensor::<B, 3>::random([2, 4, 768], Distribution::Uniform(0.0, 1.0), device);
 

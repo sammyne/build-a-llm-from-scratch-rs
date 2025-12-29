@@ -9,7 +9,7 @@ type B = Autodiff<NdArray<f32>>;
 fn main() -> anyhow::Result<()> {
     let device = &<B as Backend>::Device::default();
 
-    B::seed(123);
+    B::seed(device, 123);
 
     let batch_example = Tensor::<B, 2>::random([2, 5], Distribution::Uniform(0.0, 1.0), device);
 
@@ -17,6 +17,7 @@ fn main() -> anyhow::Result<()> {
     let out_ln = ln.forward(batch_example.clone());
     let dim = out_ln.dims().len() - 1;
     let (var, mean) = out_ln.var_mean_bias(dim);
+
     println!("mean: {mean}");
     println!("var: {var}");
 

@@ -9,9 +9,9 @@ use tiktoken::ext::Encoding;
 type B = Autodiff<NdArray<f32>>;
 
 fn main() {
-    B::seed(123);
-
     let device = &<B as Backend>::Device::default();
+
+    B::seed(device, 123);
 
     let batch = new_batch(device);
 

@@ -30,7 +30,7 @@ fn main() -> anyhow::Result<()> {
         .draw()
         .context("setup mesh")?;
 
-    B::seed(123);
+    B::seed(device, 123);
     let x = Tensor::<B, 1, Int>::arange_step(-300..300, 600 / 100, device).float() / 100.0;
 
     let y_gelu: Vec<f32> = Gelu

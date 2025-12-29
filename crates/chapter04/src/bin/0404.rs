@@ -9,17 +9,17 @@ use chapter04::Gelu;
 type B = Autodiff<NdArray<f32>>;
 
 fn main() -> anyhow::Result<()> {
-    let device = <B as Backend>::Device::default();
+    let device = &<B as Backend>::Device::default();
     let layer_sizes = [3usize, 3, 3, 3, 3, 1];
 
     let sample_input = Tensor::<B, 2>::from_floats([[1.0, 0.0, -1.0]], &device).unsqueeze::<3>();
 
-    B::seed(123);
+    B::seed(device, 123);
     println!("model without shortcut");
     let model_without_shortcut = ExampleDeepNeuralNetwork::<B>::new(layer_sizes, false);
     print_gradients(model_without_shortcut, sample_input.clone());
 
-    B::seed(123);
+    B::seed(device, 123);
     println!("\nmodel with shortcut");
     let model_with_shortcut = ExampleDeepNeuralNetwork::<B>::new(layer_sizes, true);
     print_gradients(model_with_shortcut, sample_input.clone());
